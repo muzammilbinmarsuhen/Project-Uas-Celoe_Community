@@ -17,8 +17,8 @@ class _HomeScreenState extends State<HomeScreen> {
   // Mock data
   final User currentUser = User(
     id: '1',
-    name: 'John Doe',
-    email: 'john@example.com',
+    name: 'Dandy Candra Pratama',
+    email: 'dandy@example.com',
     avatarUrl: 'https://via.placeholder.com/150',
   );
 
