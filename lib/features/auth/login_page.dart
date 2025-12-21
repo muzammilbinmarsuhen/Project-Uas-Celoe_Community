@@ -181,7 +181,11 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
 
       // Success
       _showMessage('Login Berhasil! Selamat datang ${_users[email]!['username']}');
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
+      Navigator.pushReplacementNamed(
+        context, 
+        AppRoutes.home,
+        arguments: _users[email]!['username'],
+      );
     }
   }
 

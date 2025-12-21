@@ -13,67 +13,45 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+  String _username = 'Mahasiswa'; // Default fallback
 
   // Mock data
-  final User currentUser = User(
-    id: '1',
-    name: 'Dandy Candra Pratama',
-    email: 'dandy@example.com',
-    avatarUrl: 'https://via.placeholder.com/150',
-  );
-
-  final List<Course> allCourses = [
-    Course(
-      id: '1',
-      title: 'Introduction to Flutter',
-      description: 'Learn the basics of Flutter development.',
-      instructor: 'Jane Smith',
-      progress: 0.6,
-      modules: [
-        Module(
-          id: '1',
-          title: 'Getting Started',
-          type: 'video',
-          contentUrl: 'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
-          isCompleted: true,
-        ),
-        Module(
-          id: '2',
-          title: 'Widgets Overview',
-          type: 'text',
-          contentUrl: 'This is the content for Widgets Overview.',
-          isCompleted: false,
-          quiz: Quiz(
-            id: '1',
-            questions: [
-              QuizQuestion(
-                id: '1',
-                question: 'What is Flutter?',
-                options: ['A framework', 'A language', 'An IDE', 'A database'],
-                correctIndex: 0,
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
-    Course(
-      id: '2',
-      title: 'Advanced Dart',
-      description: 'Deep dive into Dart programming.',
-      instructor: 'Bob Johnson',
-      progress: 0.3,
-      modules: [],
-    ),
-  ];
-
-  late final List<Widget> _screens;
+  late User currentUser;
+  late List<Course> allCourses;
+  late List<Widget> _screens;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    // Retrieve username from arguments
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is String) {
+      _username = args;
+    }
+
+    currentUser = User(
+      id: '1',
+      name: _username,
+      email: 'student@celoe.com', // Placeholder
+      avatarUrl: 'https://via.placeholder.com/150',
+    );
+
+    allCourses = [
+      Course(
+        id: '1',
+        title: 'Introduction to Flutter',
+        description: 'Learn the basics of Flutter development.',
+        instructor: 'Jane Smith',
+        progress: 0.6,
+        modules: [
+            // ... (keeping existing mock data structure if needed, or simple list)
+        ],
+      ),
+    ];
+
     _screens = [
-      DashboardScreen(),
+      DashboardScreen(username: _username),
       CoursesScreen(courses: allCourses),
       ProfileScreen(user: currentUser),
     ];
@@ -88,25 +66,49 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'HOME',
+      extendBody: true, // Important for curved navbar effect
+      body: _screens.length > _selectedIndex ? _screens[_selectedIndex] : _screens[0],
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(30),
+            topRight: Radius.circular(30),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book),
-            label: 'KELAS SAYA',
+          boxShadow: [
+            BoxShadow(color: Colors.black12, spreadRadius: 0, blurRadius: 10),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(30),
+            topRight: Radius.circular(30),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'NOTIFIKASI',
+          child: BottomNavigationBar(
+            items: const <BottomNavigationBarItem>[
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home_rounded),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.school_rounded), // Changed to school cap icon
+                label: 'Kelas Saya',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.notifications_rounded),
+                label: 'Notifikasi',
+              ),
+            ],
+            currentIndex: _selectedIndex,
+            backgroundColor: const Color(0xFFA82E2E), // Primary Red
+            selectedItemColor: Colors.white,
+            unselectedItemColor: Colors.white.withOpacity(0.5),
+            selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+            unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal),
+            onTap: _onItemTapped,
+            type: BottomNavigationBarType.fixed,
+            showUnselectedLabels: true,
           ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: const Color(0xFFB22222),
-        onTap: _onItemTapped,
+        ),
       ),
     );
   }

@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
+  final String username;
+
+  const DashboardScreen({super.key, required this.username});
 
   @override
   Widget build(BuildContext context) {
@@ -17,9 +19,9 @@ class DashboardScreen extends StatelessWidget {
               // Header
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(24, 56, 24, 24),
+                padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
                 decoration: const BoxDecoration(
-                  color: Color(0xFFC05555),
+                  color: Color(0xFFA82E2E), // Matched Primary
                   borderRadius: BorderRadius.only(
                     bottomLeft: Radius.circular(32),
                     bottomRight: Radius.circular(32),
@@ -29,35 +31,40 @@ class DashboardScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Hallo,',
-                          style: GoogleFonts.poppins(
-                            color: Colors.white.withOpacity(0.9),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w300,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Halo,',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white.withOpacity(0.9),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Dandy Candra Pratama',
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
+                          const SizedBox(height: 4),
+                          Text(
+                            username.toUpperCase(), // Displaying dynamic username
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
+                    const SizedBox(width: 12),
                     BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
+                      filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.2),
+                          color: const Color(0xFF7F1D1D),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
@@ -72,20 +79,15 @@ class DashboardScreen extends StatelessWidget {
                             ),
                             const SizedBox(width: 8),
                             Container(
-                              width: 32,
-                              height: 32,
+                              padding: const EdgeInsets.all(2),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: Colors.white.withOpacity(0.3),
-                                  width: 1,
-                                ),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 1.5),
                               ),
                               child: const Icon(
                                 Icons.person,
                                 color: Colors.white,
-                                size: 20,
+                                size: 16,
                               ),
                             ),
                           ],
