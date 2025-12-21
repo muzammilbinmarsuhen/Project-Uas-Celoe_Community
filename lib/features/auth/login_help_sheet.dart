@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class LoginHelpSheet extends StatefulWidget {
-  const LoginHelpSheet({super.key});
+  final ScrollController? scrollController;
+
+  const LoginHelpSheet({super.key, this.scrollController});
 
   @override
   State<LoginHelpSheet> createState() => _LoginHelpSheetState();
@@ -50,6 +52,7 @@ class _LoginHelpSheetState extends State<LoginHelpSheet> {
           // Content
           Flexible(
             child: SingleChildScrollView(
+              controller: widget.scrollController,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -144,34 +147,6 @@ class _LoginHelpSheetState extends State<LoginHelpSheet> {
     );
   }
   
-  // Custom Flag Widget to match style better without assets
-  Widget _buildFlag(bool isId) {
-     if (isId) {
-       return Container(
-         width: 30, height: 20,
-         decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300)),
-         child: Column(
-           children: [
-             Expanded(child: Container(color: Colors.red)),
-             Expanded(child: Container(color: Colors.white)),
-           ],
-         ),
-       );
-     } else {
-        return Container(
-         width: 30, height: 20,
-         decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), color: Colors.blue[900]),
-         child: Center(
-           child: Stack(
-             children: [
-               const Icon(Icons.add, color: Colors.white, size: 20),
-               Transform.rotate(angle: 0.785, child: const Icon(Icons.add, color: Colors.white, size: 20)),
-             ],
-           )
-         ),
-       );
-     }
-  }
 
   Widget _buildSection(String text) {
     return Text(

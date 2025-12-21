@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../app/routes.dart';
+import 'login_help_sheet.dart';
 
 class EllipticalClipper extends CustomClipper<Path> {
   @override
@@ -43,7 +44,7 @@ class FloatingParticlesPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white.withOpacity(0.1);
+    final paint = Paint()..color = Colors.white.withValues(alpha: 0.1);
 
     for (int i = 0; i < 20; i++) {
       final x = (size.width / 20) * i + (animationValue * 10 * (i % 2 == 0 ? 1 : -1));
@@ -77,7 +78,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   // Logic (Mock Database)
   final Map<String, Map<String, String>> _users = {}; // email -> {username, password}
 
-  List<Offset> _points = [];
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _slideAnimation;
@@ -249,8 +249,8 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                             end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
-                              Colors.black.withOpacity(0.3),
-                              const Color(0xFFA82E2E).withOpacity(0.1),
+                              Colors.black.withValues(alpha: 0.3),
+                              const Color(0xFFA82E2E).withValues(alpha: 0.1),
                             ],
                           ),
                         ),
@@ -259,7 +259,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                       BackdropFilter(
                         filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
                         child: Container(
-                          color: Colors.white.withOpacity(0.05),
+                          color: Colors.white.withValues(alpha: 0.05),
                         ),
                       ),
                       Positioned(
@@ -283,12 +283,12 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                       border: Border.all(color: Colors.white, width: 4),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withOpacity(0.3),
+                                          color: Colors.black.withValues(alpha: 0.3),
                                           blurRadius: 20,
                                           offset: const Offset(0, 8),
                                         ),
                                         BoxShadow(
-                                          color: const Color(0xFFA82E2E).withOpacity(0.3),
+                                          color: const Color(0xFFA82E2E).withValues(alpha: 0.3),
                                           blurRadius: 30,
                                           spreadRadius: 5,
                                         ),
@@ -326,14 +326,14 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                               padding: const EdgeInsets.all(24),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(20),
-                                color: Colors.white.withOpacity(0.1),
+                                color: Colors.white.withValues(alpha: 0.1),
                                 border: Border.all(
-                                  color: Colors.white.withOpacity(0.2),
+                                  color: Colors.white.withValues(alpha: 0.2),
                                   width: 1,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
+                                    color: Colors.black.withValues(alpha: 0.1),
                                     blurRadius: 20,
                                     offset: const Offset(0, 10),
                                   ),
@@ -352,7 +352,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                         color: Colors.black,
                                         shadows: [
                                           Shadow(
-                                            color: Colors.white.withOpacity(0.5),
+                                            color: Colors.white.withValues(alpha: 0.5),
                                             offset: const Offset(0, 2),
                                             blurRadius: 4,
                                           ),
@@ -460,7 +460,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                                 initialChildSize: 0.7,
                                                 minChildSize: 0.5,
                                                 maxChildSize: 0.95,
-                                                builder: (_, controller) => const LoginHelpSheet(),
+                                                builder: (_, controller) => LoginHelpSheet(scrollController: controller),
                                               ),
                                             );
                                           },
@@ -488,7 +488,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                             borderRadius: BorderRadius.circular(50),
                                           ),
                                           elevation: 12,
-                                          shadowColor: const Color(0xFFA82E2E).withOpacity(0.4),
+                                          shadowColor: const Color(0xFFA82E2E).withValues(alpha: 0.4),
                                         ),
                                         child: Text(
                                           _isLogin ? 'Log In' : 'Daftar Sekarang',
@@ -547,12 +547,12 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                           borderRadius: BorderRadius.circular(20),
                           gradient: LinearGradient(
                             colors: [
-                              Colors.white.withOpacity(0.1),
-                              Colors.white.withOpacity(0.05),
+                              Colors.white.withValues(alpha: 0.1),
+                              Colors.white.withValues(alpha: 0.05),
                             ],
                           ),
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             width: 1,
                           ),
                         ),
@@ -600,44 +600,4 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       ),
     );
   }
-}
-
-class _DotPainter extends CustomPainter {
-  final List<Offset> points;
-
-  _DotPainter(this.points);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFFA82E2E)
-      ..strokeWidth = 3
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
-
-    if (points.length > 1) {
-      final path = Path();
-      path.moveTo(points[0].dx, points[0].dy);
-      for (int i = 1; i < points.length; i++) {
-        path.lineTo(points[i].dx, points[i].dy);
-      }
-      canvas.drawPath(path, paint);
-    }
-
-    // Draw dots
-    final dotPaint = Paint()
-      ..color = const Color(0xFFA82E2E)
-      ..style = PaintingStyle.fill;
-
-    for (int i = 0; i < 20; i++) {
-      for (int j = 0; j < 10; j++) {
-        final x = (size.width / 21) * (i + 1);
-        final y = (size.height / 11) * (j + 1);
-        canvas.drawCircle(Offset(x, y), 3, dotPaint);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(_DotPainter oldDelegate) => true;
 }

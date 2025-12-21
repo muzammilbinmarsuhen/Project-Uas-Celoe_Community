@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/models.dart';
-import 'course_detail_screen.dart';
+import '../kelas/kelas_page.dart';
 
 class CoursesScreen extends StatelessWidget {
   final List<Course> courses;
@@ -28,7 +28,7 @@ class CoursesScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => CourseDetailScreen(course: course),
+                    builder: (context) => KelasPage(course: course),
                   ),
                 );
               },

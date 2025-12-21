@@ -11,7 +11,7 @@ class FloatingParticlesPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white.withOpacity(0.1);
+    final paint = Paint()..color = Colors.white.withValues(alpha: 0.1);
 
     for (int i = 0; i < 20; i++) {
       final x = (size.width / 20) * i + (animationValue * 10 * (i % 2 == 0 ? 1 : -1));
@@ -128,7 +128,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
           BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
             child: Container(
-              color: Colors.white.withOpacity(0.02),
+              color: Colors.white.withValues(alpha: 0.02),
             ),
           ),
 
@@ -192,7 +192,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                           fontWeight: FontWeight.normal,
                           shadows: [
                             Shadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withValues(alpha: 0.2),
                               offset: const Offset(0, 2),
                               blurRadius: 4,
                             ),

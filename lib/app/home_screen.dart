@@ -69,45 +69,73 @@ class _HomeScreenState extends State<HomeScreen> {
       extendBody: true, // Important for curved navbar effect
       body: _screens.length > _selectedIndex ? _screens[_selectedIndex] : _screens[0],
       bottomNavigationBar: Container(
+        height: 70, // Fixed height for custom bar
         decoration: const BoxDecoration(
+          color: Color(0xFFA82E2E), // Primary Red
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(30),
             topRight: Radius.circular(30),
           ),
           boxShadow: [
-            BoxShadow(color: Colors.black12, spreadRadius: 0, blurRadius: 10),
+            BoxShadow(color: Colors.black26, spreadRadius: 0, blurRadius: 10, offset: Offset(0, -2)),
           ],
         ),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(30),
-            topRight: Radius.circular(30),
-          ),
-          child: BottomNavigationBar(
-            items: const <BottomNavigationBarItem>[
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home_rounded),
-                label: 'Home',
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildAnimatedNavItem(0, Icons.home_rounded, 'Home'),
+            _buildAnimatedNavItem(1, Icons.school_rounded, 'Kelas Saya'),
+            _buildAnimatedNavItem(2, Icons.notifications_rounded, 'Notifikasi'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnimatedNavItem(int index, IconData icon, String label) {
+    print('Building NavItem $index, selected: $_selectedIndex'); // Debug
+    final isSelected = _selectedIndex == index;
+
+    return GestureDetector(
+      onTap: () => _onItemTapped(index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutBack,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        decoration: isSelected
+            ? BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2), // Semi-transparent white pill
+                borderRadius: BorderRadius.circular(25),
+              )
+            : BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(25),
               ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.school_rounded), // Changed to school cap icon
-                label: 'Kelas Saya',
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedScale(
+              scale: isSelected ? 1.2 : 1.0, // Scale up icon
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutBack,
+              child: Icon(
+                icon,
+                color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.6),
+                size: 26,
               ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.notifications_rounded),
-                label: 'Notifikasi',
+            ),
+            const SizedBox(height: 4),
+            AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 300),
+              style: TextStyle(
+                color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.6),
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontSize: 12,
               ),
-            ],
-            currentIndex: _selectedIndex,
-            backgroundColor: const Color(0xFFA82E2E), // Primary Red
-            selectedItemColor: Colors.white,
-            unselectedItemColor: Colors.white.withOpacity(0.5),
-            selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-            unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal),
-            onTap: _onItemTapped,
-            type: BottomNavigationBarType.fixed,
-            showUnselectedLabels: true,
-          ),
+              child: Text(label),
+            ),
+          ],
         ),
       ),
     );

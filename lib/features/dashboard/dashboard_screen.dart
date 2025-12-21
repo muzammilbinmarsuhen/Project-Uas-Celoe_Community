@@ -38,7 +38,7 @@ class DashboardScreen extends StatelessWidget {
                           Text(
                             'Halo,',
                             style: GoogleFonts.poppins(
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withValues(alpha: 0.9),
                               fontSize: 14,
                               fontWeight: FontWeight.w400,
                             ),
@@ -122,7 +122,7 @@ class DashboardScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withValues(alpha: 0.1),
                             blurRadius: 20,
                             offset: const Offset(0, 8),
                           ),
@@ -137,7 +137,7 @@ class DashboardScreen extends StatelessWidget {
                               width: 128,
                               height: 128,
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.1),
+                                color: Colors.white.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(64),
                               ),
                             ),
@@ -148,7 +148,7 @@ class DashboardScreen extends StatelessWidget {
                               Text(
                                 'Desain Antarmuka & Pengalaman Pengguna',
                                 style: GoogleFonts.poppins(
-                                  color: Colors.white.withOpacity(0.9),
+                                  color: Colors.white.withValues(alpha: 0.9),
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                   height: 1.2,
@@ -158,7 +158,7 @@ class DashboardScreen extends StatelessWidget {
                               Text(
                                 'Tugas 01 - UID Android Mobile Game',
                                 style: GoogleFonts.poppins(
-                                  color: Colors.white.withOpacity(0.8),
+                                  color: Colors.white.withValues(alpha: 0.8),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -169,7 +169,7 @@ class DashboardScreen extends StatelessWidget {
                                   Text(
                                     'Waktu Pengumpulan',
                                     style: GoogleFonts.poppins(
-                                      color: Colors.white.withOpacity(0.9),
+                                      color: Colors.white.withValues(alpha: 0.9),
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -180,7 +180,7 @@ class DashboardScreen extends StatelessWidget {
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.2),
+                                        color: Colors.white.withValues(alpha: 0.2),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Text(
@@ -236,7 +236,7 @@ class DashboardScreen extends StatelessWidget {
                         border: Border.all(color: Colors.grey[200]!),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -362,7 +362,7 @@ class DashboardScreen extends StatelessWidget {
         border: Border.all(color: Colors.grey[200]!),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
