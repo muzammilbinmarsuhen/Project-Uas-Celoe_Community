@@ -451,7 +451,19 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                       Align(
                                         alignment: Alignment.center,
                                         child: TextButton(
-                                          onPressed: () {},
+                                          onPressed: () {
+                                            showModalBottomSheet(
+                                              context: context,
+                                              isScrollControlled: true,
+                                              backgroundColor: Colors.transparent,
+                                              builder: (context) => DraggableScrollableSheet(
+                                                initialChildSize: 0.7,
+                                                minChildSize: 0.5,
+                                                maxChildSize: 0.95,
+                                                builder: (_, controller) => const LoginHelpSheet(),
+                                              ),
+                                            );
+                                          },
                                           child: Text(
                                             'Bantuan ?',
                                             style: GoogleFonts.poppins(
