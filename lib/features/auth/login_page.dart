@@ -68,7 +68,7 @@ class _LoginPageState extends State<LoginPage> {
                         child: ClipPath(
                           clipper: DiagonalClipper(),
                           child: Image.asset(
-                            'assets/images/uim.jfif',
+                            'assets/images/UIM.JPG',
                             fit: BoxFit.cover,
                             width: double.infinity,
                           ),
@@ -206,6 +206,33 @@ class _LoginPageState extends State<LoginPage> {
                               style: GoogleFonts.poppins(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton(
+                            onPressed: () {
+                              // Navigate to create account or show message
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Fitur buat akun belum tersedia')),
+                              );
+                            },
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Color(0xFFB74A4A)),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                            ),
+                            child: Text(
+                              'Buat Akun',
+                              style: GoogleFonts.poppins(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFFB74A4A),
                               ),
                             ),
                           ),
