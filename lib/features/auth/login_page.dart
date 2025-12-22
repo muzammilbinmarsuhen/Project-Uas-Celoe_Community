@@ -1,5 +1,5 @@
 import 'dart:math';
-import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../app/routes.dart';
@@ -208,63 +208,83 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixin {
+class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   // Controllers
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _usernameController = TextEditingController(); // New Username Controller
+  final _usernameController = TextEditingController();
   
   // State
   bool _obscurePassword = true;
-  bool _isLogin = true; // Toggle state
+  bool _isLogin = true; 
+  bool _isSplash = true; // NEW: Starts in Splash mode
   
   // Logic (Mock Database)
-  final Map<String, Map<String, String>> _users = {}; // email -> {username, password}
+  final Map<String, Map<String, String>> _users = {}; 
 
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _slideAnimation;
+  // Animations
+  late AnimationController _mainController; // Controls background particles
   late Animation<double> _particleAnimation;
+
+  late AnimationController _formController; // Controls Form appearance
+  late Animation<double> _formFadeAnimation;
+  late Animation<double> _formSlideAnimation;
+
+  late AnimationController _logoPulseController; // Controls Logo Pulse on Splash
+  late Animation<double> _logoScaleAnimation;
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
+    
+    // 1. Background Particles (Continuous)
+    _mainController = AnimationController(
+      duration: const Duration(seconds: 10),
+      vsync: this,
+    )..repeat();
+    _particleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _mainController, curve: Curves.linear),
+    );
+
+    // 2. Logo Pulse (While in Splash)
+    _logoPulseController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat(reverse: true);
+    _logoScaleAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
+      CurvedAnimation(parent: _logoPulseController, curve: Curves.easeInOut),
+    );
+
+    // 3. Form Intro (Triggered on Click)
+    _formController = AnimationController(
+      duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
-      ),
+    _formFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _formController, curve: const Interval(0.4, 1.0, curve: Curves.easeOut)),
     );
-
-    _slideAnimation = Tween<double>(begin: 50.0, end: 0.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: const Interval(0.2, 0.8, curve: Curves.easeOut),
-      ),
+    _formSlideAnimation = Tween<double>(begin: 100.0, end: 0.0).animate(
+      CurvedAnimation(parent: _formController, curve: const Interval(0.4, 1.0, curve: Curves.easeOutCubic)),
     );
-
-    _particleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.linear,
-      ),
-    );
-
-    _animationController.repeat(reverse: true);
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _mainController.dispose();
+    _formController.dispose();
+    _logoPulseController.dispose();
     _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _onSplashTap() {
+    setState(() {
+      _isSplash = false;
+    });
+    _logoPulseController.stop(); // Stop pulsing
+    _formController.forward(); // Start showing form
   }
 
   void _showMessage(String message, {bool isError = false}) {
@@ -288,41 +308,32 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     }
 
     if (!_isLogin) {
-      // REGISTER LOGIC
+      // REGISTER
       if (username.isEmpty) {
         _showMessage('Username wajib diisi', isError: true);
         return;
       }
       if (_users.containsKey(email)) {
         _showMessage('Email sudah terdaftar. Silakan login.', isError: true);
-        setState(() => _isLogin = true); // Switch to login
+        setState(() => _isLogin = true);
         return;
       }
-      
-      // Save user
-      _users[email] = {
-        'username': username,
-        'password': password,
-      };
-      
+      _users[email] = {'username': username, 'password': password};
       _showMessage('Registrasi berhasil! Silakan login.');
       setState(() {
         _isLogin = true;
-        _passwordController.clear(); // Clear password for security
+        _passwordController.clear();
       });
     } else {
-      // LOGIN LOGIC
+      // LOGIN
       if (!_users.containsKey(email)) {
-        _showMessage('Akun tidak ditemukan. Silakan daftar terlebih dahulu.', isError: true);
+        _showMessage('Akun tidak ditemukan. Silakan daftar.', isError: true);
         return;
       }
-      
       if (_users[email]!['password'] != password) {
         _showMessage('Password salah!', isError: true);
         return;
       }
-
-      // Success
       _showMessage('Login Berhasil! Selamat datang ${_users[email]!['username']}');
       Navigator.pushReplacementNamed(
         context, 
@@ -335,405 +346,292 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   void _toggleMode() {
     setState(() {
       _isLogin = !_isLogin;
-      _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-        CurvedAnimation(
-          parent: _animationController,
-          curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
-        ),
-      );
-      // Restart animation for effect
-      _animationController.reset();
-      _animationController.forward();
-      // Keep repeating for particles but forward for fade reset
-      _animationController.repeat(reverse: true); 
+      // Re-trigger form animation slightly for effect
+      _formController.value = 0.4;
+      _formController.forward();
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                // Header with Image and Floating Logo
-                SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.35,
-                  child: Stack(
-                    children: [
-                      ClipPath(
-                        clipper: EllipticalClipper(),
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 500),
-                          child: Image.asset(
-                            'assets/images/uim.jpg',
-                            key: ValueKey<bool>(_isLogin), // Potentially change image based on mode if needed
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            height: double.infinity,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withValues(alpha: 0.3),
-                              const Color(0xFFA82E2E).withValues(alpha: 0.1),
-                            ],
-                          ),
-                        ),
-                      ),
-                      // Glassmorphism effect
-                      BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
-                        child: Container(
-                          color: Colors.white.withValues(alpha: 0.05),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        child: Center(
-                          child: AnimatedBuilder(
-                            animation: _fadeAnimation,
-                            builder: (context, child) {
-                              return Opacity(
-                                opacity: _fadeAnimation.value,
-                                child: Transform.translate(
-                                  offset: Offset(0, _slideAnimation.value),
-                                  child: Container(
-                                    width: 96,
-                                    height: 96,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFA82E2E),
-                                      shape: BoxShape.circle,
-                                      border: Border.all(color: Colors.white, width: 4),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.3),
-                                          blurRadius: 20,
-                                          offset: const Offset(0, 8),
-                                        ),
-                                        BoxShadow(
-                                          color: const Color(0xFFA82E2E).withValues(alpha: 0.3),
-                                          blurRadius: 30,
-                                          spreadRadius: 5,
-                                        ),
-                                      ],
-                                    ),
-                                    child: Icon(
-                                      _isLogin ? Icons.lock_open : Icons.person_add,
-                                      color: Colors.white,
-                                      size: 48,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Form with Glassmorphism
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                  child: AnimatedBuilder(
-                    animation: _fadeAnimation,
-                    builder: (context, child) {
-                      return Opacity(
-                        opacity: _fadeAnimation.value,
-                        child: Transform.translate(
-                          offset: Offset(0, _slideAnimation.value),
-                          child: Container(
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              color: Colors.white.withValues(alpha: 0.1),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.2),
-                                width: 1,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.1),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 10),
-                                ),
-                              ],
-                            ),
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    _isLogin ? 'Login' : 'Daftar Akun',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 32,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
-                                      shadows: [
-                                        Shadow(
-                                          color: Colors.white.withValues(alpha: 0.5),
-                                          offset: const Offset(0, 2),
-                                          blurRadius: 4,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 30),
-
-                                  // Username Field (Only visible in Register mode)
-                                  if (!_isLogin)
-                                    Padding(
-                                      padding: const EdgeInsets.only(bottom: 32.0),
-                                      child: TextFormField(
-                                        controller: _usernameController,
-                                        cursorColor: const Color(0xFFA82E2E),
-                                        style: GoogleFonts.poppins(color: Colors.black),
-                                        decoration: InputDecoration(
-                                          labelText: 'Username',
-                                          labelStyle: GoogleFonts.poppins(color: Colors.grey[700]),
-                                          floatingLabelStyle: GoogleFonts.poppins(color: const Color(0xFFA82E2E)),
-                                          border: const UnderlineInputBorder(),
-                                          enabledBorder: const UnderlineInputBorder(
-                                            borderSide: BorderSide(color: Color(0xFFA82E2E)),
-                                          ),
-                                          focusedBorder: const UnderlineInputBorder(
-                                            borderSide: BorderSide(color: Color(0xFFA82E2E), width: 2),
-                                          ),
-                                          prefixIcon: const Icon(Icons.person_outline, color: Color(0xFFA82E2E)),
-                                        ),
-                                      ),
-                                    ),
-
-                                  // Email Field
-                                  TextFormField(
-                                    controller: _emailController,
-                                    keyboardType: TextInputType.emailAddress,
-                                    cursorColor: const Color(0xFFA82E2E),
-                                    style: GoogleFonts.poppins(color: Colors.black),
-                                    decoration: InputDecoration(
-                                      labelText: 'Email 365',
-                                      labelStyle: GoogleFonts.poppins(
-                                        color: Colors.grey[700],
-                                      ),
-                                      floatingLabelStyle: GoogleFonts.poppins(
-                                        color: const Color(0xFFA82E2E),
-                                      ),
-                                      border: const UnderlineInputBorder(),
-                                      enabledBorder: const UnderlineInputBorder(
-                                        borderSide: BorderSide(color: Color(0xFFA82E2E)),
-                                      ),
-                                      focusedBorder: const UnderlineInputBorder(
-                                        borderSide: BorderSide(color: Color(0xFFA82E2E), width: 2),
-                                      ),
-                                      prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFFA82E2E)),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 32),
-                                  // Password Field
-                                  TextFormField(
-                                    controller: _passwordController,
-                                    obscureText: _obscurePassword,
-                                    cursorColor: const Color(0xFFA82E2E),
-                                    style: GoogleFonts.poppins(color: Colors.black),
-                                    decoration: InputDecoration(
-                                      labelText: 'Password',
-                                      labelStyle: GoogleFonts.poppins(
-                                        color: Colors.grey[700],
-                                      ),
-                                      floatingLabelStyle: GoogleFonts.poppins(
-                                        color: const Color(0xFFA82E2E),
-                                      ),
-                                      border: const UnderlineInputBorder(),
-                                      enabledBorder: const UnderlineInputBorder(
-                                        borderSide: BorderSide(color: Color(0xFFA82E2E)),
-                                      ),
-                                      focusedBorder: const UnderlineInputBorder(
-                                        borderSide: BorderSide(color: Color(0xFFA82E2E), width: 2),
-                                      ),
-                                      prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFA82E2E)),
-                                      suffixIcon: IconButton(
-                                        icon: Icon(
-                                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                                          color: Colors.grey[600],
-                                        ),
-                                        onPressed: () {
-                                          setState(() {
-                                            _obscurePassword = !_obscurePassword;
-                                          });
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  // Forgot Password / Help
-                                  if (_isLogin)
-                                    Padding(
-                                      padding: const EdgeInsets.only(bottom: 32.0),
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          TextButton(
-                                            onPressed: () {
-                                              showModalBottomSheet(
-                                                context: context,
-                                                isScrollControlled: true,
-                                                backgroundColor: Colors.transparent,
-                                                builder: (context) => DraggableScrollableSheet(
-                                                  initialChildSize: 0.7,
-                                                  minChildSize: 0.5,
-                                                  maxChildSize: 0.95,
-                                                  builder: (_, controller) => LoginHelpSheet(scrollController: controller),
-                                                ),
-                                              );
-                                            },
-                                            child: Text(
-                                              'Bantuan ?',
-                                              style: GoogleFonts.poppins(
-                                                color: const Color(0xFFA82E2E),
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  if (!_isLogin) const SizedBox(height: 32),
-                                  // Action Button
-                                   SizedBox(
-                                     width: double.infinity,
-                                     height: 60,
-                                     child: LiquidFillButton(
-                                       onPressed: _handleAuth,
-                                       fillColor: const Color(0xFFA82E2E),
-                                       child: Text(
-                                         _isLogin ? 'Log In' : 'Daftar Sekarang',
-                                         style: GoogleFonts.poppins(
-                                           fontSize: 18,
-                                           fontWeight: FontWeight.bold,
-                                           color: Colors.white,
-                                         ),
-                                       ),
-                                     ),
-                                   ),
-                                  const SizedBox(height: 16),
-                                  // Toggle Mode Button
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: OutlinedButton(
-                                      onPressed: _toggleMode,
-                                      style: OutlinedButton.styleFrom(
-                                        side: const BorderSide(color: Color(0xFFA82E2E)),
-                                        padding: const EdgeInsets.symmetric(vertical: 16),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(50),
-                                        ),
-                                      ),
-                                      child: Text(
-                                        _isLogin ? 'Buat Akun Baru' : 'Sudah punya akun? Login',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: const Color(0xFFA82E2E),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 32),
-                // Enhanced Connect the Dots Animation (kept for consistent aesthetic)
-                AnimatedBuilder(
-                  animation: _fadeAnimation,
-                  builder: (context, child) {
-                    return Opacity(
-                      opacity: _fadeAnimation.value,
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 32),
-                        height: 150, // Reduced height
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.white.withValues(alpha: 0.1),
-                              Colors.white.withValues(alpha: 0.05),
-                            ],
-                          ),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            width: 1,
-                          ),
-                        ),
-                        child: Center(
-                           child: Text(
-                             'CeLOE Community', // Simple Branding
-                             style: GoogleFonts.poppins(
-                               color: Colors.grey[400],
-                               fontSize: 18,
-                               fontWeight: FontWeight.bold,
-                             ),
-                           ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 100), // Space for bottom wave
-              ],
+          // 1. Static/Animated Background
+          Positioned.fill(
+            child: AnimatedBuilder(
+              animation: _particleAnimation,
+              builder: (context, child) {
+                return CustomPaint(
+                  painter: FloatingParticlesPainter(_particleAnimation.value),
+                );
+              },
             ),
           ),
-          // Animated Particles Background
-          AnimatedBuilder(
-            animation: _particleAnimation,
-            builder: (context, child) {
-              return Positioned.fill(
-                child: CustomPaint(
-                  painter: FloatingParticlesPainter(_particleAnimation.value),
-                ),
-              );
-            },
-          ),
-          // Enhanced Bottom Wave
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: ClipPath(
-              clipper: WaveClipper(),
-              child: Container(
-                height: MediaQuery.of(context).size.height * 0.25,
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0xFFA82E2E),
-                      Color(0xFF7F1D1D),
+          
+          // 2. Main Layout (Splash -> Form)
+          Stack(
+            children: [
+              // HEADER IMAGE (Always visible, but changes size/clipper)
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 800),
+                curve: Curves.easeInOutCubic,
+                top: 0,
+                left: 0,
+                right: 0,
+                height: _isSplash ? size.height : size.height * 0.35,
+                child: ClipPath(
+                  clipper: _isSplash ? null : EllipticalClipper(),
+                  child: Stack(
+                    children: [
+                      Image.asset(
+                        'assets/images/uim.jpg',
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                      ),
+                      Container(
+                         color: Colors.black.withValues(alpha: _isSplash ? 0.6 : 0.3),
+                      ),
                     ],
                   ),
                 ),
               ),
-            ),
+
+              // SPLASH CONTENT (Centered Logo)
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 800),
+                curve: Curves.easeInOutCubic,
+                top: _isSplash ? (size.height / 2) - 80 : 60, // Move to header position
+                left: 0, 
+                right: 0,
+                child: GestureDetector(
+                  onTap: _isSplash ? _onSplashTap : null,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ScaleTransition(
+                        scale: _isSplash ? _logoScaleAnimation : const AlwaysStoppedAnimation(1.0),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 800),
+                          width: _isSplash ? 160 : 80,
+                          height: _isSplash ? 160 : 80,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: const Color(0xFFA82E2E), // Primary Red
+                            border: Border.all(color: Colors.white, width: _isSplash ? 6 : 3),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFA82E2E).withValues(alpha: 0.5),
+                                blurRadius: _isSplash ? 50 : 20,
+                                spreadRadius: _isSplash ? 10 : 2,
+                              )
+                            ],
+                          ),
+                          child: Icon(
+                            Icons.school_rounded, // Changed Icon for "University/Education" feel
+                            size: _isSplash ? 80 : 40,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      if (_isSplash) ...[
+                        const SizedBox(height: 30),
+                        Text(
+                          "CeLOE Community",
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          "Tap to Connect",
+                          style: GoogleFonts.poppins(
+                            color: Colors.white70,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ]
+                    ],
+                  ),
+                ),
+              ),
+
+              // FORM CONTENT (Slides In)
+              if (!_isSplash)
+                Positioned.fill(
+                  top: size.height * 0.35, // Below the header
+                  child: AnimatedBuilder(
+                    animation: _formController,
+                    builder: (context, child) {
+                      return Opacity(
+                        opacity: _formFadeAnimation.value,
+                        child: Transform.translate(
+                          offset: Offset(0, _formSlideAnimation.value),
+                          child: child,
+                        ),
+                      );
+                    },
+                    // The Actual Scrollable Form
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                           Text(
+                            _isLogin ? 'Selamat Datang' : 'Bergabunglah',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.poppins(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFFA82E2E),
+                            ),
+                          ),
+                          Text(
+                            _isLogin ? 'Login untuk melanjutkan belajar' : 'Buat akun komunitas baru',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          const SizedBox(height: 40),
+
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 20,
+                                  offset: Offset(0, 10),
+                                )
+                              ],
+                            ),
+                            child: Column(
+                              children: [
+                                if (!_isLogin) ...[
+                                  TextFormField(
+                                    controller: _usernameController,
+                                    decoration: InputDecoration(
+                                      prefixIcon: const Icon(Icons.person, color: Color(0xFFA82E2E)),
+                                      labelText: 'Username',
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                ],
+                                TextFormField(
+                                  controller: _emailController,
+                                  decoration: InputDecoration(
+                                    prefixIcon: const Icon(Icons.email, color: Color(0xFFA82E2E)),
+                                    labelText: 'Email',
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                TextFormField(
+                                  controller: _passwordController,
+                                  obscureText: _obscurePassword,
+                                  decoration: InputDecoration(
+                                    prefixIcon: const Icon(Icons.lock, color: Color(0xFFA82E2E)),
+                                    suffixIcon: IconButton(
+                                      icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                                    ),
+                                    labelText: 'Password',
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                ),
+                                const SizedBox(height: 30),
+                                
+                                // Buttons
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 55,
+                                  child: LiquidFillButton(
+                                    onPressed: _handleAuth,
+                                    child: Text(
+                                      _isLogin ? 'MASUK' : 'DAFTAR',
+                                      style: GoogleFonts.poppins(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 1.2,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          
+                          const SizedBox(height: 20),
+                          if (_isLogin)
+                            TextButton(
+                               onPressed: () {
+                                 // Help sheet
+                                 showModalBottomSheet(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    backgroundColor: Colors.transparent,
+                                    builder: (_) => DraggableScrollableSheet(
+                                      initialChildSize: 0.7,
+                                      minChildSize: 0.5,
+                                      maxChildSize: 0.95,
+                                      builder: (_, c) => LoginHelpSheet(scrollController: c),
+                                    ),
+                                  );
+                               },
+                               child: Text("Butuh Bantuan?", style: GoogleFonts.poppins(color: Colors.grey)),
+                            ),
+
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(_isLogin ? "Belum punya akun? " : "Sudah punya akun? "),
+                              GestureDetector(
+                                onTap: _toggleMode,
+                                child: Text(
+                                  _isLogin ? "Daftar" : "Login",
+                                  style: GoogleFonts.poppins(
+                                    color: const Color(0xFFA82E2E),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 50), // Bottom padding
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
+
+          // Bottom Curve Decor (Only visible in Splash or transitioning)
+          if (_isSplash)
+            Positioned(
+              bottom: 0, left: 0, right: 0,
+              child: ClipPath(
+                clipper: WaveClipper(),
+                child: Container(
+                  height: 100,
+                  color: const Color(0xFFA82E2E).withValues(alpha: 0.5),
+                ),
+              ),
+            ),
         ],
       ),
     );
