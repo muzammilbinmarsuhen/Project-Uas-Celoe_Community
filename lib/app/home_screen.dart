@@ -1,8 +1,9 @@
+import 'package:image_picker/image_picker.dart'; // Import ImagePicker
 import 'package:flutter/material.dart';
 import '../core/models.dart';
 import '../features/dashboard/dashboard_screen.dart';
 import '../features/courses/courses_screen.dart';
-import '../features/profil/profil_page.dart';
+import '../features/notifications/notification_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,11 +15,12 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   String _username = 'Mahasiswa'; // Default fallback
+  XFile? _avatarFile; // Store the avatar file
 
   // Mock data
   late User currentUser;
   late List<Course> allCourses;
-  late List<Widget> _screens;
+  // late List<Widget> _screens; // Removed to build dynamically
 
   @override
   void didChangeDependencies() {
@@ -45,15 +47,9 @@ class _HomeScreenState extends State<HomeScreen> {
         instructor: 'Jane Smith',
         progress: 0.6,
         modules: [
-            // ... (keeping existing mock data structure if needed, or simple list)
+            // ... 
         ],
       ),
-    ];
-
-    _screens = [
-      DashboardScreen(username: _username),
-      CoursesScreen(courses: allCourses),
-      ProfilPage(user: currentUser),
     ];
   }
 
@@ -63,11 +59,29 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _handleAvatarChanged(XFile newFile) {
+
+    setState(() {
+      _avatarFile = newFile;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Rebuild screens to pass updated state
+    final List<Widget> screens = [
+      DashboardScreen(
+        username: _username,
+        userAvatar: _avatarFile,
+        onAvatarChanged: _handleAvatarChanged,
+      ),
+      CoursesScreen(courses: allCourses),
+      const NotificationScreen(), 
+    ];
+
     return Scaffold(
       extendBody: true, // Important for curved navbar effect
-      body: _screens.length > _selectedIndex ? _screens[_selectedIndex] : _screens[0],
+      body: screens.length > _selectedIndex ? screens[_selectedIndex] : screens[0],
       bottomNavigationBar: Container(
         height: 70, // Fixed height for custom bar
         decoration: const BoxDecoration(
@@ -85,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             _buildAnimatedNavItem(0, Icons.home_rounded, 'Home'),
             _buildAnimatedNavItem(1, Icons.school_rounded, 'Kelas Saya'),
-            _buildAnimatedNavItem(2, Icons.person_rounded, 'Profil'),
+            _buildAnimatedNavItem(2, Icons.notifications_rounded, 'Notifikasi'),
           ],
         ),
       ),

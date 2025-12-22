@@ -1,13 +1,22 @@
-
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../core/models.dart';
 import '../profil/profil_page.dart';
 
 class DashboardScreen extends StatefulWidget {
   final String username;
+  final XFile? userAvatar; // Added state
+  final Function(XFile)? onAvatarChanged; // Added callback
 
-  const DashboardScreen({super.key, required this.username});
+  const DashboardScreen({
+    super.key, 
+    required this.username,
+    this.userAvatar,
+    this.onAvatarChanged,
+  });
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -74,7 +83,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB), // Very light gray for contrast
+      backgroundColor: const Color(0xFFF9FAFB),
       body: SafeArea(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
@@ -82,10 +91,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 1. Header Section
-              FadeTransition(
-                opacity: _headerFade,
-                child: SlideTransition(
-                  position: _headerSlide,
+              SlideTransition(
+                position: _headerSlide,
+                child: FadeTransition(
+                  opacity: _headerFade,
                   child: _buildHeader(context),
                 ),
               ),
@@ -96,10 +105,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // 2. Upcoming Task
-                    FadeTransition(
-                      opacity: _taskFade,
-                      child: SlideTransition(
-                        position: _taskSlide,
+                    SlideTransition(
+                      position: _taskSlide,
+                      child: FadeTransition(
+                        opacity: _taskFade,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -121,10 +130,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     const SizedBox(height: 32),
 
                     // 3. Announcements
-                    FadeTransition(
-                      opacity: _announceFade,
-                      child: SlideTransition(
-                        position: _announceSlide,
+                    SlideTransition(
+                      position: _announceSlide,
+                      child: FadeTransition(
+                        opacity: _announceFade,
                         child: Column(
                           children: [
                             Row(
@@ -160,10 +169,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     const SizedBox(height: 32),
 
                     // 4. Course Progress
-                    FadeTransition(
-                      opacity: _courseFade,
-                      child: SlideTransition(
-                        position: _courseSlide,
+                    SlideTransition(
+                      position: _courseSlide,
+                      child: FadeTransition(
+                        opacity: _courseFade,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -228,74 +237,123 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
   }
 
   Widget _buildHeader(BuildContext context) {
+    
+    // Logic to determine ImageProvider for the small avatar
+    ImageProvider avatarImage;
+    if (widget.userAvatar != null) {
+      if (kIsWeb) {
+        avatarImage = NetworkImage(widget.userAvatar!.path);
+      } else {
+        avatarImage = FileImage(File(widget.userAvatar!.path));
+      }
+    } else {
+       avatarImage = const NetworkImage('https://via.placeholder.com/150');
+    }
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(28, 40, 28, 30),
+      padding: const EdgeInsets.fromLTRB(24, 40, 24, 32),
       decoration: const BoxDecoration(
-        color: Color(0xFFA82E2E),
+        color: Color(0xFFA82E2E), // Primary Red
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(36),
           bottomRight: Radius.circular(36),
         ),
         boxShadow: [
           BoxShadow(
-            color: Color(0x40A82E2E),
-            blurRadius: 20,
-            offset: Offset(0, 10),
+             color: Color(0x40A82E2E),
+             blurRadius: 24,
+             offset: Offset(0, 12),
           )
         ],
       ),
-      child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-               builder: (context) => ProfilPage(
-                user: User(
-                  id: 'user_1',
-                  name: widget.username,
-                  email: 'student@celoe.com',
-                  avatarUrl: 'https://via.placeholder.com/150',
-                ),
-              ),
-            ),
-          );
-        },
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // LEFT: Greeting and Name
+          Flexible(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Halo, Selamat Pagi',
                   style: GoogleFonts.poppins(
-                    color: Colors.white70,
-                    fontSize: 14,
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  widget.username.length > 15 ? '${widget.username.substring(0, 15)}...' : widget.username,
-                  style: GoogleFonts.poppins(
+                  widget.username,
+                   style: GoogleFonts.poppins(
                     color: Colors.white,
-                    fontSize: 22,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
+                  textAlign: TextAlign.left,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
-            Container(
+          ),
+
+          // RIGHT: 'Mahasiswa' Card with Profile Picture
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProfilPage(
+                    user: User(
+                      id: 'user_1',
+                      name: widget.username,
+                      email: 'student@celoe.com',
+                      avatarUrl: 'https://via.placeholder.com/150',
+                    ),
+                    initialImage: widget.userAvatar, // Pass current image
+                    onImageChanged: widget.onAvatarChanged, // Pass callback
+                  ),
+                ),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white.withValues(alpha: 0.5)),
+                color: Colors.white.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(50),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
               ),
-              padding: const EdgeInsets.all(8),
-              child: const Icon(Icons.person, color: Colors.white, size: 28),
-            )
-          ],
-        ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                   Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                      image: DecorationImage(
+                        image: avatarImage, // Use computed image provider
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Mahasiswa',
+                    style: GoogleFonts.poppins(
+                       color: Colors.white,
+                       fontSize: 14,
+                       fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

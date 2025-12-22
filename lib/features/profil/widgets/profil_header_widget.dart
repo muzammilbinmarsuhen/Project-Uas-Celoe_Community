@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 class ProfilHeaderWidget extends StatelessWidget {
   final String name;
   final String avatarUrl;
+  final ImageProvider? imageProvider; // Added this
 
   final VoidCallback? onEditAvatar;
 
@@ -11,6 +12,7 @@ class ProfilHeaderWidget extends StatelessWidget {
     super.key,
     required this.name,
     required this.avatarUrl,
+    this.imageProvider,
     this.onEditAvatar,
   });
 
@@ -48,11 +50,11 @@ class ProfilHeaderWidget extends StatelessWidget {
                   child: CircleAvatar(
                     radius: 50,
                     backgroundColor: Colors.grey[300],
-                    // Display image if url is valid, else icon
-                    backgroundImage: avatarUrl.isNotEmpty && avatarUrl.startsWith('http') 
+                    // Display imageProvider if available, else network image if valid
+                    backgroundImage: imageProvider ?? (avatarUrl.isNotEmpty && avatarUrl.startsWith('http') 
                         ? NetworkImage(avatarUrl) 
-                        : null,
-                    child: (avatarUrl.isEmpty || !avatarUrl.startsWith('http')) 
+                        : null),
+                    child: (imageProvider == null && (avatarUrl.isEmpty || !avatarUrl.startsWith('http'))) 
                         ? const Icon(Icons.person, size: 50, color: Colors.grey) 
                         : null,
                   ),

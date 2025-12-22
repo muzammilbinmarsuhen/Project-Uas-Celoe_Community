@@ -1,5 +1,8 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart'; // Import ImagePicker
 import '../../core/models.dart';
 import 'widgets/profil_header_widget.dart';
 import 'widgets/profil_tab_bar_widget.dart';
@@ -8,8 +11,15 @@ import 'widgets/edit_profil_form_widget.dart';
 
 class ProfilPage extends StatefulWidget {
   final User? user;
+  final XFile? initialImage;
+  final Function(XFile)? onImageChanged;
 
-  const ProfilPage({super.key, this.user});
+  const ProfilPage({
+    super.key, 
+    this.user,
+    this.initialImage,
+    this.onImageChanged,
+  });
 
   @override
   State<ProfilPage> createState() => _ProfilPageState();
@@ -17,6 +27,8 @@ class ProfilPage extends StatefulWidget {
 
 class _ProfilPageState extends State<ProfilPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final ImagePicker _picker = ImagePicker();
+  XFile? _pickedFile; // Store the picked file
 
   final List<Map<String, dynamic>> _kelasItems = [
     {
@@ -31,19 +43,48 @@ class _ProfilPageState extends State<ProfilPage> with SingleTickerProviderStateM
     }
   ];
 
-  // State for Avatar
-  String _avatarUrl = 'https://via.placeholder.com/150';
+  // State for Avatar (Fallback)
+  final String _avatarUrl = 'https://via.placeholder.com/150';
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _pickedFile = widget.initialImage;
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? image = await _picker.pickImage(source: source);
+      if (image != null) {
+        setState(() {
+          _pickedFile = image;
+        });
+        
+        // Notify Parent
+        if (widget.onImageChanged != null) {
+          widget.onImageChanged!(image);
+        }
+
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Foto Profil Berhasil Diperbarui')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal mengambil gambar: $e')),
+        );
+      }
+    }
   }
 
   void _handleEditAvatar() {
@@ -68,10 +109,7 @@ class _ProfilPageState extends State<ProfilPage> with SingleTickerProviderStateM
                 title: Text('Ambil Foto', style: GoogleFonts.poppins()),
                 onTap: () {
                   Navigator.pop(context);
-                  // Simulate upload
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Kamera tidak tersedia di emulator/demo')),
-                  );
+                  _pickImage(ImageSource.camera);
                 },
               ),
               ListTile(
@@ -79,13 +117,7 @@ class _ProfilPageState extends State<ProfilPage> with SingleTickerProviderStateM
                 title: Text('Pilih dari Galeri', style: GoogleFonts.poppins()),
                 onTap: () {
                   Navigator.pop(context);
-                  setState(() {
-                    // Simulate changing to a different image
-                     _avatarUrl = 'https://ui-avatars.com/api/?name=Dandy+Candra&background=random&size=150';
-                  });
-                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Foto Profil Berhasil Diperbarui')),
-                  );
+                  _pickImage(ImageSource.gallery);
                 },
               ),
             ],
@@ -99,7 +131,17 @@ class _ProfilPageState extends State<ProfilPage> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     // Dummy Data
     const name = 'DANDY CANDRA PRATAMA';
-    // const avatarUrl = 'https://via.placeholder.com/150'; // Moved to state
+    
+    ImageProvider? avatarImage;
+    if (_pickedFile != null) {
+      if (kIsWeb) {
+        avatarImage = NetworkImage(_pickedFile!.path);
+      } else {
+        avatarImage = FileImage(File(_pickedFile!.path));
+      }
+    } else {
+      avatarImage = NetworkImage(_avatarUrl);
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
@@ -108,7 +150,8 @@ class _ProfilPageState extends State<ProfilPage> with SingleTickerProviderStateM
           // 1. Header
           ProfilHeaderWidget(
             name: name, 
-            avatarUrl: _avatarUrl,
+            avatarUrl: _avatarUrl, // We might need to update ProfilHeaderWidget to accept ImageProvider to support FileImage
+            imageProvider: avatarImage, 
             onEditAvatar: _handleEditAvatar,
           ),
 

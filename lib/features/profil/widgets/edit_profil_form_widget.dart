@@ -34,6 +34,8 @@ class _EditProfilFormWidgetState extends State<EditProfilFormWidget> {
         children: [
           _buildTextField('Nama Pertama', _firstNameController),
           _buildTextField('Nama Terakhir', _lastNameController),
+          _buildTextField('NIM', TextEditingController(text: '1301190456')), // Mock data
+          _buildTextField('Kelas', TextEditingController(text: 'D4SM-42-03')), // Mock data
           _buildTextField('E-mail Address', _emailController),
           _buildTextField('Negara', _countryController),
           _buildTextField('Deskripsi', _descriptionController, maxLines: 4),
