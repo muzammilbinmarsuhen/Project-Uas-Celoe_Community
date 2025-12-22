@@ -1,3 +1,5 @@
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../app/routes.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -8,12 +10,14 @@ import '../profil/profil_page.dart';
 
 class DashboardScreen extends StatefulWidget {
   final String username;
-  final XFile? userAvatar; // Added state
-  final Function(XFile)? onAvatarChanged; // Added callback
+  final String email; // Added email
+  final XFile? userAvatar; 
+  final Function(XFile)? onAvatarChanged; 
 
   const DashboardScreen({
     super.key, 
     required this.username,
+    required this.email, // Added required
     this.userAvatar,
     this.onAvatarChanged,
   });
@@ -236,6 +240,8 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     );
   }
 
+
+
   Widget _buildHeader(BuildContext context) {
     
     // Logic to determine ImageProvider for the small avatar
@@ -299,59 +305,105 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
             ),
           ),
 
-          // RIGHT: 'Mahasiswa' Card with Profile Picture
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ProfilPage(
-                    user: User(
-                      id: 'user_1',
-                      name: widget.username,
-                      email: 'student@celoe.com',
-                      avatarUrl: 'https://via.placeholder.com/150',
-                    ),
-                    initialImage: widget.userAvatar, // Pass current image
-                    onImageChanged: widget.onAvatarChanged, // Pass callback
-                  ),
-                ),
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(50),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                   Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                      image: DecorationImage(
-                        image: avatarImage, // Use computed image provider
-                        fit: BoxFit.cover,
+          // RIGHT: 'Mahasiswa' Card AND Logout Button
+          Row(
+            children: [
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProfilPage(
+                        user: User(
+                          id: 'user_1',
+                          name: widget.username,
+                          email: widget.email,
+                          avatarUrl: 'https://via.placeholder.com/150',
+                        ),
+                        initialImage: widget.userAvatar, 
+                        onImageChanged: widget.onAvatarChanged,
                       ),
                     ),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(50),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
                   ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Mahasiswa',
-                    style: GoogleFonts.poppins(
-                       color: Colors.white,
-                       fontSize: 14,
-                       fontWeight: FontWeight.w600,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                       Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                          image: DecorationImage(
+                            image: avatarImage,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Mahasiswa',
+                        style: GoogleFonts.poppins(
+                           color: Colors.white,
+                           fontSize: 13,
+                           fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
+              const SizedBox(width: 12),
+              // LOGOUT BUTTON
+              Material(
+                color: const Color(0xFF8B1A1A), // Darker shade of red
+                shape: const CircleBorder(),
+                child: IconButton(
+                  icon: const Icon(Icons.logout_rounded, color: Colors.white, size: 22),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          title: const Text("Logout"),
+                          content: const Text("Apakah anda yakin ingin keluar?"),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text("Batal"),
+                            ),
+                            TextButton(
+                              onPressed: () async {
+                                Navigator.pop(context); // Close Dialog
+                                final prefs = await SharedPreferences.getInstance();
+                                await prefs.clear(); // Clear Session
+                                if (context.mounted) {
+                                  Navigator.pushNamedAndRemoveUntil(
+                                    context, 
+                                    AppRoutes.login, 
+                                    (route) => false
+                                  );
+                                }
+                              },
+                              child: const Text("Ya, Keluar", style: TextStyle(color: Colors.red)),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ],
       ),

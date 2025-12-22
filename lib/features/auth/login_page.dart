@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../app/routes.dart';
 import 'login_help_sheet.dart';
 
@@ -219,8 +220,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   bool _isLogin = true; 
   bool _isSplash = true; // NEW: Starts in Splash mode
   
-  // Logic (Mock Database)
-  final Map<String, Map<String, String>> _users = {}; 
+
 
   // Animations
   late AnimationController _mainController; // Controls background particles
@@ -236,6 +236,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    _checkLoginStatus(); // Check if already logged in
     
     // 1. Background Particles (Continuous)
     _mainController = AnimationController(
@@ -297,7 +298,22 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     );
   }
 
-  void _handleAuth() {
+  Future<void> _checkLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+    
+    if (isLoggedIn && mounted) {
+      final username = prefs.getString('username') ?? 'Mahasiswa';
+      // Auto-navigate to Home
+      Navigator.pushReplacementNamed(
+        context, 
+        AppRoutes.home,
+        arguments: {'username': username, 'email': prefs.getString('email') ?? 'student@celoe.com'},
+      );
+    }
+  }
+
+  Future<void> _handleAuth() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
     final username = _usernameController.text.trim();
@@ -307,39 +323,57 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       return;
     }
 
+    final prefs = await SharedPreferences.getInstance();
+
     if (!_isLogin) {
       // REGISTER
       if (username.isEmpty) {
         _showMessage('Username wajib diisi', isError: true);
         return;
       }
-      if (_users.containsKey(email)) {
-        _showMessage('Email sudah terdaftar. Silakan login.', isError: true);
-        setState(() => _isLogin = true);
-        return;
+      
+      // Simple Overwrite Registration (Single User for Demo)
+      await prefs.setString('email', email);
+      await prefs.setString('password', password);
+      await prefs.setString('username', username);
+      await prefs.setBool('isLoggedIn', true); // Auto Login
+
+      _showMessage('Registrasi berhasil! Selamat datang $username');
+      
+      if (mounted) {
+         Navigator.pushReplacementNamed(
+            context, 
+            AppRoutes.home,
+            arguments: {'username': username, 'email': email},
+         );
       }
-      _users[email] = {'username': username, 'password': password};
-      _showMessage('Registrasi berhasil! Silakan login.');
-      setState(() {
-        _isLogin = true;
-        _passwordController.clear();
-      });
+
     } else {
       // LOGIN
-      if (!_users.containsKey(email)) {
-        _showMessage('Akun tidak ditemukan. Silakan daftar.', isError: true);
+      final savedEmail = prefs.getString('email');
+      final savedPassword = prefs.getString('password');
+      final savedUsername = prefs.getString('username');
+
+      if (savedEmail != email) {
+        _showMessage('Email tidak terdaftar/salah.', isError: true);
         return;
       }
-      if (_users[email]!['password'] != password) {
+      
+      if (savedPassword != password) {
         _showMessage('Password salah!', isError: true);
         return;
       }
-      _showMessage('Login Berhasil! Selamat datang ${_users[email]!['username']}');
-      Navigator.pushReplacementNamed(
-        context, 
-        AppRoutes.home,
-        arguments: _users[email]!['username'],
-      );
+
+      await prefs.setBool('isLoggedIn', true);
+      _showMessage('Login Berhasil! Selamat datang $savedUsername');
+      
+      if (mounted) {
+        Navigator.pushReplacementNamed(
+          context, 
+          AppRoutes.home,
+          arguments: {'username': savedUsername, 'email': savedEmail},
+        );
+      }
     }
   }
 

@@ -15,6 +15,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   String _username = 'Mahasiswa'; // Default fallback
+  String _email = 'student@celoe.com'; // Default
   XFile? _avatarFile; // Store the avatar file
 
   // Mock data
@@ -26,16 +27,19 @@ class _HomeScreenState extends State<HomeScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     
-    // Retrieve username from arguments
+    // Retrieve arguments (Map or String)
     final args = ModalRoute.of(context)?.settings.arguments;
-    if (args is String) {
-      _username = args;
+    if (args is Map) {
+       _username = args['username'] ?? 'Mahasiswa';
+       _email = args['email'] ?? 'student@celoe.com';
+    } else if (args is String) {
+       _username = args;
     }
 
     currentUser = User(
       id: '1',
       name: _username,
-      email: 'student@celoe.com', // Placeholder
+      email: _email, // Placeholder
       avatarUrl: 'https://via.placeholder.com/150',
     );
 
@@ -72,6 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final List<Widget> screens = [
       DashboardScreen(
         username: _username,
+        email: _email, // Passed email
         userAvatar: _avatarFile,
         onAvatarChanged: _handleAvatarChanged,
       ),
