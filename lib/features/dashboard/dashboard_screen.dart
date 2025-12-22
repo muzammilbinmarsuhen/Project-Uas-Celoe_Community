@@ -1,332 +1,222 @@
-import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/models.dart';
 import '../profil/profil_page.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   final String username;
 
   const DashboardScreen({super.key, required this.username});
 
   @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  
+  // Staggered Animations
+  late Animation<double> _headerFade;
+  late Animation<Offset> _headerSlide;
+  late Animation<double> _taskFade;
+  late Animation<Offset> _taskSlide;
+  late Animation<double> _announceFade;
+  late Animation<Offset> _announceSlide;
+  late Animation<double> _courseFade;
+  late Animation<Offset> _courseSlide;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+       duration: const Duration(milliseconds: 1200),
+       vsync: this,
+    );
+
+    // Helper to create staggered interval
+    Animation<double> createFade(double begin, double end) {
+      return CurvedAnimation(
+        parent: _controller,
+        curve: Interval(begin, end, curve: Curves.easeOut),
+      );
+    }
+    Animation<Offset> createSlide(double begin, double end) {
+      return Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Interval(begin, end, curve: Curves.easeOutCubic),
+        ),
+      );
+    }
+
+    _headerFade = createFade(0.0, 0.4);
+    _headerSlide = createSlide(0.0, 0.4);
+
+    _taskFade = createFade(0.2, 0.6);
+    _taskSlide = createSlide(0.2, 0.6);
+
+    _announceFade = createFade(0.4, 0.8);
+    _announceSlide = createSlide(0.4, 0.8);
+
+    _courseFade = createFade(0.6, 1.0);
+    _courseSlide = createSlide(0.6, 1.0);
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: const Color(0xFFF9FAFB), // Very light gray for contrast
       body: SafeArea(
         child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
-                decoration: const BoxDecoration(
-                  color: Color(0xFFA82E2E), // Matched Primary
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(32),
-                    bottomRight: Radius.circular(32),
-                  ),
-                ),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ProfilPage(
-                          user: User(
-                            id: 'user_1',
-                            name: username,
-                            email: 'student@celoe.com',
-                            avatarUrl: 'https://via.placeholder.com/150',
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Halo,',
-                          style: GoogleFonts.poppins(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          username.toUpperCase(), // Displaying dynamic username
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(width: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF7F1D1D),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        children: [
-                          Text(
-                            'MAHASISWA',
-                            style: GoogleFonts.poppins(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 1.5),
-                            ),
-                            child: const Icon(
-                              Icons.person,
-                              color: Colors.white,
-                              size: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+              // 1. Header Section
+              FadeTransition(
+                opacity: _headerFade,
+                child: SlideTransition(
+                  position: _headerSlide,
+                  child: _buildHeader(context),
                 ),
               ),
-            ),
 
-              // Content
               Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Upcoming Tasks
-                    Text(
-                      'Tugas Yang Akan Datang',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFB91C1C),
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: Stack(
-                        children: [
-                          Positioned(
-                            top: -40,
-                            right: -40,
-                            child: Container(
-                              width: 128,
-                              height: 128,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(64),
+                    // 2. Upcoming Task
+                    FadeTransition(
+                      opacity: _taskFade,
+                      child: SlideTransition(
+                        position: _taskSlide,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                             Text(
+                              'Prioritas Hari Ini',
+                              style: GoogleFonts.poppins(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
                               ),
                             ),
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Desain Antarmuka & Pengalaman Pengguna',
-                                style: GoogleFonts.poppins(
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  height: 1.2,
+                            const SizedBox(height: 16),
+                            _buildPremiumTaskCard(),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // 3. Announcements
+                    FadeTransition(
+                      opacity: _announceFade,
+                      child: SlideTransition(
+                        position: _announceSlide,
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Info Kampus',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Tugas 01 - UID Android Mobile Game',
-                                style: GoogleFonts.poppins(
-                                  color: Colors.white.withValues(alpha: 0.8),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              Column(
-                                children: [
-                                  Text(
-                                    'Waktu Pengumpulan',
+                                TextButton(
+                                  onPressed: () {},
+                                  child: Text(
+                                    'Semua',
                                     style: GoogleFonts.poppins(
-                                      color: Colors.white.withValues(alpha: 0.9),
-                                      fontSize: 14,
+                                      color: const Color(0xFFA82E2E),
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
-                                  const SizedBox(height: 8),
-                                  BackdropFilter(
-                                    filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: 0.2),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        'Jumat 26 Februari, 23:59 WIB',
-                                        style: GoogleFonts.poppins(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            _buildInfoCard(),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // 4. Course Progress
+                    FadeTransition(
+                      opacity: _courseFade,
+                      child: SlideTransition(
+                        position: _courseSlide,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Lanjutkan Belajar',
+                              style: GoogleFonts.poppins(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            // Horizontal Scroll list
+                            SizedBox(
+                              height: 140, 
+                              child: ListView(
+                                scrollDirection: Axis.horizontal,
+                                clipBehavior: Clip.none,
+                                children: [
+                                  _buildMiniCourseCard(
+                                    title: "Flutter Basics", 
+                                    progress: 0.75, 
+                                    color: Colors.blueAccent
+                                  ),
+                                  const SizedBox(width: 16),
+                                  _buildMiniCourseCard(
+                                    title: "UI/UX Design", 
+                                    progress: 0.40, 
+                                    color: Colors.orangeAccent
+                                  ),
+                                  const SizedBox(width: 16),
+                                  _buildMiniCourseCard(
+                                    title: "Python Data", 
+                                    progress: 0.10, 
+                                    color: Colors.greenAccent
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    // Announcements
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Pengumuman Terakhir',
-                          style: GoogleFonts.poppins(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
+                            ),
+                            const SizedBox(height: 24),
+                            // Vertical list for latest specific course
+                             _buildCourseCard(
+                              imageUrl: 'https://via.placeholder.com/150',
+                              semester: '2021/2',
+                              title: 'Bahasa Inggris: Business and Scientific',
+                              progress: 0.90,
+                              backgroundColor: Colors.indigoAccent,
+                            ),
+                            const SizedBox(height: 80),
+                          ],
                         ),
-                        TextButton(
-                          onPressed: () {},
-                          child: Text(
-                            'Lihat Semua',
-                            style: GoogleFonts.poppins(
-                              color: Colors.blue[600],
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey[200]!),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Text(
-                              'Maintenance Pra UAS Semester Genap 2020/2021',
-                              style: GoogleFonts.poppins(
-                                color: Colors.grey[600],
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                          Container(
-                            height: 160,
-                            width: double.infinity,
-                            color: Colors.blue[50],
-                            child: const Center(
-                              child: Text(
-                                'Maintenance Illustration',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
                       ),
                     ),
-
-                    const SizedBox(height: 32),
-
-                    // Class Progress
-                    Text(
-                      'Progres Kelas',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Course cards
-                    SizedBox(height: 100),
-
-                    const SizedBox(height: 16),
-
-                    SizedBox(height: 100),
-
-                    const SizedBox(height: 16),
-
-                    SizedBox(height: 100),
-
-                    const SizedBox(height: 16),
-
-                    SizedBox(height: 100),
-
-                    const SizedBox(height: 16),
-
-                    _buildCourseCard(
-                      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDm0ItKTm0TGsp_UydY78XMWFd6VSD9jIuh_JCjeipjiG8U73ipxitFcllzzwE7Dq9DwZC1OlnE1e4NTEjC23_toR-apxiBPv88VdnjEiKtQRANyGIa0_fS5MOWvLsJIM3nQFbvtUGT2vLNBXIpxwCFeZGDaE4ZTxeIIM7llXECP07mXfH6JiOyEkFwB2CToALmvs8cG5kkJQRRaaGnTZCkMwvzz85jipkwnY76IlAIJABP9KP1iM-1kNPSHa1-LbCxDWXMHTawXw',
-                      semester: '2021/2',
-                      title: 'Bahasa Inggris: Business and Scientific',
-                      progress: 0.90,
-                      backgroundColor: Colors.grey[100]!,
-                    ),
-
-                    const SizedBox(height: 80), // Space for bottom nav
                   ],
                 ),
               ),
@@ -337,6 +227,249 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(28, 40, 28, 30),
+      decoration: const BoxDecoration(
+        color: Color(0xFFA82E2E),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(36),
+          bottomRight: Radius.circular(36),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x40A82E2E),
+            blurRadius: 20,
+            offset: Offset(0, 10),
+          )
+        ],
+      ),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+               builder: (context) => ProfilPage(
+                user: User(
+                  id: 'user_1',
+                  name: widget.username,
+                  email: 'student@celoe.com',
+                  avatarUrl: 'https://via.placeholder.com/150',
+                ),
+              ),
+            ),
+          );
+        },
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Halo, Selamat Pagi',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white70,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  widget.username.length > 15 ? '${widget.username.substring(0, 15)}...' : widget.username,
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white.withValues(alpha: 0.5)),
+              ),
+              padding: const EdgeInsets.all(8),
+              child: const Icon(Icons.person, color: Colors.white, size: 28),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPremiumTaskCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [const Color(0xFFB91C1C), const Color(0xFFEF4444)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFB91C1C).withValues(alpha: 0.4),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -20,
+            top: -20,
+            child: Icon(Icons.assignment_outlined, size: 100, color: Colors.white.withValues(alpha: 0.1)),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Deadline Segera',
+                  style: GoogleFonts.poppins(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Desain UI/UX Mobile',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Tugas 01 - Wireframing',
+                style: GoogleFonts.poppins(
+                  color: Colors.white70,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                 children: [
+                   const Icon(Icons.access_time_rounded, color: Colors.white, size: 16),
+                   const SizedBox(width: 8),
+                   Text(
+                     'Besok, 23:59 WIB',
+                     style: GoogleFonts.poppins(
+                       color: Colors.white,
+                       fontWeight: FontWeight.w600,
+                     ),
+                   ),
+                 ],
+              )
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey[100]!),
+        boxShadow: const [
+          BoxShadow(
+             color: Colors.black12,
+             blurRadius: 15,
+             offset: Offset(0, 5),
+          )
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            height: 50, width: 50,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF7ED),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.campaign_outlined, color: Colors.orange, size: 28),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Maintenance Sistem',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                Text(
+                  'Sistem akan down pada Sabtu malam.',
+                  style: GoogleFonts.poppins(color: Colors.grey[600], fontSize: 12),
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMiniCourseCard({required String title, required double progress, required Color color}) {
+    return Container(
+      width: 140,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Container(
+             padding: const EdgeInsets.all(8),
+             decoration: BoxDecoration(
+               color: color.withValues(alpha: 0.1),
+               shape: BoxShape.circle,
+             ),
+             child: Icon(Icons.class_rounded, color: color, size: 20),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title, 
+                maxLines: 1, 
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 13),
+              ),
+              const SizedBox(height: 8),
+              LinearProgressIndicator(
+                value: progress,
+                backgroundColor: Colors.grey[100],
+                valueColor: AlwaysStoppedAnimation(color),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+  
   Widget _buildCourseCard({
     required String imageUrl,
     required String semester,
@@ -348,31 +481,28 @@ class DashboardScreen extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[200]!),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
       child: Row(
         children: [
           Container(
-            width: 80,
-            height: 80,
+            width: 70,
+            height: 70,
             decoration: BoxDecoration(
-              color: backgroundColor,
-              borderRadius: BorderRadius.circular(12),
+              color: backgroundColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: const Center(
-              child: Icon(
-                Icons.book,
-                color: Colors.white,
-                size: 32,
-              ),
+            child: Icon(
+              Icons.book_rounded,
+              color: backgroundColor,
+              size: 32,
             ),
           ),
           const SizedBox(width: 16),
@@ -384,50 +514,36 @@ class DashboardScreen extends StatelessWidget {
                   semester,
                   style: GoogleFonts.poppins(
                     color: Colors.grey[500],
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 2),
                 Text(
                   title,
                   style: GoogleFonts.poppins(
                     color: Colors.black87,
-                    fontSize: 14,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
-                    height: 1.2,
                   ),
-                  maxLines: 2,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 12),
-                Container(
-                  width: double.infinity,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: FractionallySizedBox(
-                    alignment: Alignment.centerLeft,
-                    widthFactor: progress,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF991B1B),
-                        borderRadius: BorderRadius.circular(5),
+                Stack(
+                  children: [
+                    Container(height: 6, decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(3))),
+                    FractionallySizedBox(
+                      widthFactor: progress,
+                      child: Container(
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: backgroundColor,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
                       ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '${(progress * 100).toInt()} % Selesai',
-                  style: GoogleFonts.poppins(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                    )
+                  ],
+                )
               ],
             ),
           ),
