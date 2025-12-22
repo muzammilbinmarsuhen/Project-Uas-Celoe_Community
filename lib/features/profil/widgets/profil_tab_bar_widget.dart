@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class KelasTabBarWidget extends StatelessWidget {
+class ProfilTabBarWidget extends StatelessWidget {
   final TabController controller;
 
-  const KelasTabBarWidget({super.key, required this.controller});
+  const ProfilTabBarWidget({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 50,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -25,14 +26,15 @@ class KelasTabBarWidget extends StatelessWidget {
         controller: controller,
         indicator: const UnderlineTabIndicator(
           borderSide: BorderSide(color: Colors.black87, width: 3),
-          insets: EdgeInsets.symmetric(horizontal: 40),
+          insets: EdgeInsets.symmetric(horizontal: 20),
         ),
         labelColor: Colors.black87,
         unselectedLabelColor: Colors.grey,
-        labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13),
         tabs: const [
-          Tab(text: 'Materi'),
-          Tab(text: 'Tugas Dan Kuis'),
+          Tab(text: 'About Me'),
+          Tab(text: 'Kelas'),
+          Tab(text: 'Edit Profile'),
         ],
       ),
     );

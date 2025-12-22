@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../core/models.dart';
 import '../features/dashboard/dashboard_screen.dart';
 import '../features/courses/courses_screen.dart';
-import '../features/profile/profile_screen.dart';
+import '../features/profil/profil_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -53,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _screens = [
       DashboardScreen(username: _username),
       CoursesScreen(courses: allCourses),
-      ProfileScreen(user: currentUser),
+      ProfilPage(user: currentUser),
     ];
   }
 
@@ -85,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             _buildAnimatedNavItem(0, Icons.home_rounded, 'Home'),
             _buildAnimatedNavItem(1, Icons.school_rounded, 'Kelas Saya'),
-            _buildAnimatedNavItem(2, Icons.notifications_rounded, 'Notifikasi'),
+            _buildAnimatedNavItem(2, Icons.person_rounded, 'Profil'),
           ],
         ),
       ),
@@ -93,7 +93,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildAnimatedNavItem(int index, IconData icon, String label) {
-    print('Building NavItem $index, selected: $_selectedIndex'); // Debug
     final isSelected = _selectedIndex == index;
 
     return GestureDetector(

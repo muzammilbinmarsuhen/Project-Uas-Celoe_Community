@@ -1,6 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../core/models.dart';
+import '../profil/profil_page.dart';
 
 class DashboardScreen extends StatelessWidget {
   final String username;
@@ -27,76 +29,88 @@ class DashboardScreen extends StatelessWidget {
                     bottomRight: Radius.circular(32),
                   ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Halo,',
-                            style: GoogleFonts.poppins(
-                              color: Colors.white.withValues(alpha: 0.9),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                            ),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProfilPage(
+                          user: User(
+                            id: 'user_1',
+                            name: username,
+                            email: 'student@celoe.com',
+                            avatarUrl: 'https://via.placeholder.com/150',
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            username.toUpperCase(), // Displaying dynamic username
-                            style: GoogleFonts.poppins(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+                        ),
                       ),
+                    );
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Halo,',
+                          style: GoogleFonts.poppins(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          username.toUpperCase(), // Displaying dynamic username
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
                     const SizedBox(width: 12),
-                    BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF7F1D1D),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          children: [
-                            Text(
-                              'MAHASISWA',
-                              style: GoogleFonts.poppins(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                              ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF7F1D1D),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            'MAHASISWA',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
                             ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.all(2),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 1.5),
-                              ),
-                              child: const Icon(
-                                Icons.person,
-                                color: Colors.white,
-                                size: 16,
-                              ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 1.5),
                             ),
-                          ],
-                        ),
+                            child: const Icon(
+                              Icons.person,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
+            ),
 
               // Content
               Padding(
@@ -288,43 +302,19 @@ class DashboardScreen extends StatelessWidget {
                     const SizedBox(height: 16),
 
                     // Course cards
-                    _buildCourseCard(
-                      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDi6-1ES7EdbjYHgcVlL9BADNCCd42LokEnJSHwPKlLM_et8diEuCWl8j3x-7Gru8c02BpZGKkPe9AendbTHZASpX03QdbClh-eJql_ylQljA4YXLIb1LDdx3PIld0OCsGtq39q4TN_ei3UhHwF0QE9vVEDrz6fTqcDBT3UFt1JTMHnaAeshsmFHvWpHSRL2lQOCpum_iGsVcp619M8gmeVumrZSL1y_wHbI-myQIibgKSSrAMuk4BTrLDh5qLl5Mq5ol17LoEvIA',
-                      semester: '2021/2',
-                      title: 'Desain Antarmuka & Pengalaman Pengguna D4SM-42-03 [ADY]',
-                      progress: 0.89,
-                      backgroundColor: Colors.yellow[100]!,
-                    ),
+                    SizedBox(height: 100),
 
                     const SizedBox(height: 16),
 
-                    _buildCourseCard(
-                      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB1Rp1j_Ry7xiNxl0yl7sLrzgMJBi0hbYTzPNY_bsLnkIua9WnqgXHTq6rZXTTV2iHIu41azZvXVScmt5XH_U7rCfzyxURmPIZG4W-JcnEk0uS2I-NivxRsW8-EPofEGe6HG3bZ2Wf1Nj7hqciipCHB5IWPAa1yW7FR61ZG1MwF8t4UG0GDeWnztlGCg-_ueNTQOlgqTjRwDumRfPr_-ZaWF9rJp_kScN177R7pMLLA-bscMPPnm3bkRRWGTewusYIQR-f7fZZazA',
-                      semester: '2021/2',
-                      title: 'Kewarganegaraan D4SM-41-GAB1 [BBO]. JUMAT 2',
-                      progress: 0.86,
-                      backgroundColor: Colors.red[100]!,
-                    ),
+                    SizedBox(height: 100),
 
                     const SizedBox(height: 16),
 
-                    _buildCourseCard(
-                      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA5SD5zcuYMBkzBAvMH9YNJvp86n-9IpC1itb17R8W55Lg1NZmL0cylAkgjjfeI08VW0jdTCeC5rhptd5A8m6DjpCMyOpdC-vZ_ne9ZBwhbFffNaT-Za1JzGA5wu6MIeYxt9DFCUCHhani_NToPbwqLfSL-lFDoI3vFFxx8t29qZPJkR1E6DDVXUfulVejJpSydk5p6VspDVCvqA_f89FOZN9xiqlLgHRTPRYa23C9xoeLB-yBWQHIc0X9mYgWH_yeJqdwm8RCrJw',
-                      semester: '2021/2',
-                      title: 'Sistem Operasi D4SM-44-02 [DDS]',
-                      progress: 0.90,
-                      backgroundColor: Colors.blue[100]!,
-                    ),
+                    SizedBox(height: 100),
 
                     const SizedBox(height: 16),
 
-                    _buildCourseCard(
-                      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAjhRALYRxdH2Fa1_W2_tjPTkzLMjqw0l0BF_7kkLImrugldBTqw_aGOR9WiBPYfPWEcHXbVgzMFVvCfi9eE7H4YIjTKFZ7_C2U6_57TPtuwHjx5BIZQC_E9vwzbXirGjHCBSYGz2M5hNNmAWLAG5o-mTpYtvAY4XFj_k2bgLZgjVhnvmzhjnqhBayRgze4ptz14R4sSb-bUPj7-5oFta-VEXEELHiXQbF04LtRq4ywX0WmtosTCKSYBkla-RZB-DEXYCwyqBo05Q',
-                      semester: '2021/2',
-                      title: 'Pemrograman Perangkat Bergerak Multimedia',
-                      progress: 0.90,
-                      backgroundColor: Colors.teal[100]!,
-                    ),
+                    SizedBox(height: 100),
 
                     const SizedBox(height: 16),
 
