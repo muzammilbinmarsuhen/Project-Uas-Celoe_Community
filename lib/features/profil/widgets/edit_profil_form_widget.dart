@@ -1,19 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/models.dart';
 
 class EditProfilFormWidget extends StatefulWidget {
-  const EditProfilFormWidget({super.key});
+  final User? user;
+  const EditProfilFormWidget({super.key, this.user});
 
   @override
   State<EditProfilFormWidget> createState() => _EditProfilFormWidgetState();
 }
 
 class _EditProfilFormWidgetState extends State<EditProfilFormWidget> {
-  final _firstNameController = TextEditingController(text: 'DANDY CANDRA');
-  final _lastNameController = TextEditingController(text: 'PRATA');
-  final _emailController = TextEditingController(text: 'dandycandrapratama&365telkomuniversity.ac.id');
+  late TextEditingController _firstNameController;
+  late TextEditingController _lastNameController;
+  late TextEditingController _emailController;
   final _countryController = TextEditingController(text: 'Indonesia');
-  final _descriptionController = TextEditingController(text: 'Mahasiswa S1 Desain Komunikasi Visual yang memiliki minat tinggi di bidang UI/UX Design');
+  final _descriptionController = TextEditingController(text: 'Mahasiswa');
+
+  @override
+  void initState() {
+    super.initState();
+    _initControllers();
+  }
+
+  void _initControllers() {
+    final parts = widget.user?.name.split(' ') ?? ['User'];
+    _firstNameController = TextEditingController(text: parts.first);
+    _lastNameController = TextEditingController(text: parts.length > 1 ? parts.sublist(1).join(' ') : '');
+    _emailController = TextEditingController(text: widget.user?.email ?? '');
+  }
+
+  @override
+  void didUpdateWidget(EditProfilFormWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.user != oldWidget.user) {
+      final parts = widget.user?.name.split(' ') ?? ['User'];
+      _firstNameController.text = parts.first;
+      _lastNameController.text = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+      _emailController.text = widget.user?.email ?? '';
+    }
+  }
 
   @override
   void dispose() {

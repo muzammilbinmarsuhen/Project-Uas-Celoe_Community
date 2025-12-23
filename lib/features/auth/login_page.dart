@@ -71,7 +71,7 @@ class LiquidFillButton extends StatefulWidget {
     required this.onPressed,
     required this.child,
     this.fillColor = const Color(0xFFA82E2E),
-    this.duration = const Duration(milliseconds: 800),
+    this.duration = const Duration(milliseconds: 1500), // Slower for effect
   });
 
   @override
@@ -103,7 +103,10 @@ class _LiquidFillButtonState extends State<LiquidFillButton>
 
   void _handlePress() {
     _controller.forward(from: 0.0);
-    widget.onPressed();
+    // Delay actual action slightly to show fill effect
+    Future.delayed(const Duration(milliseconds: 600), () {
+        widget.onPressed();
+    });
   }
 
   @override
@@ -118,24 +121,27 @@ class _LiquidFillButtonState extends State<LiquidFillButton>
             padding: const EdgeInsets.symmetric(vertical: 16),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(50),
+              // Base Gradient (Darker Red)
               gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
                 colors: [
-                  widget.fillColor.withValues(alpha: 0.8),
                   widget.fillColor,
+                  Color.lerp(widget.fillColor, Colors.black, 0.2)!,
                 ],
               ),
               boxShadow: [
                 BoxShadow(
                   color: widget.fillColor.withValues(alpha: 0.4),
-                  blurRadius: 12,
-                  offset: const Offset(0, 6),
+                  blurRadius: 15,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
             child: Stack(
               alignment: Alignment.center,
               children: [
-                // Liquid fill effect
+                // 1. Progress Fill (Background Rect)
                 Positioned.fill(
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(50),
@@ -143,18 +149,34 @@ class _LiquidFillButtonState extends State<LiquidFillButton>
                       alignment: Alignment.centerLeft,
                       child: Container(
                         width: MediaQuery.of(context).size.width * _animation.value,
-                        height: double.infinity,
-                        color: Colors.white.withValues(alpha: 0.2),
+                        color: Colors.white.withValues(alpha: 0.2), // Base fill
                       ),
                     ),
                   ),
                 ),
-                // Wave overlay for liquid effect
+                // 2. Wave Effect
                 Positioned.fill(
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(50),
                     child: CustomPaint(
-                      painter: LiquidWavePainter(_animation.value),
+                      painter: LiquidWavePainter(
+                        _animation.value, 
+                        offset: _animation.value * 100, // Dynamic ripple
+                        color: Colors.white.withValues(alpha: 0.3)
+                      ),
+                    ),
+                  ),
+                ),
+                // 3. Second Wave (Slightly behind, diff speed)
+                 Positioned.fill(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(50),
+                    child: CustomPaint(
+                      painter: LiquidWavePainter(
+                        _animation.value * 0.85, 
+                        offset: _animation.value * 150 + 50, 
+                        color: Colors.white.withValues(alpha: 0.15)
+                      ),
                     ),
                   ),
                 ),
@@ -170,27 +192,54 @@ class _LiquidFillButtonState extends State<LiquidFillButton>
 
 class LiquidWavePainter extends CustomPainter {
   final double progress;
+  final double offset;
+  final Color color;
 
-  LiquidWavePainter(this.progress);
+  LiquidWavePainter(this.progress, {this.offset = 0, required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
     if (progress == 0) return;
 
     final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.3)
+      ..color = color
       ..style = PaintingStyle.fill;
 
     final path = Path();
-    final waveHeight = 10.0;
-    final waveLength = size.width / 4;
 
+
+    // Start slightly left to hide edge
     path.moveTo(0, size.height);
-    for (double x = 0; x <= size.width * progress; x += waveLength / 4) {
-      final y = size.height - waveHeight * (1 - progress) +
-          waveHeight * sin(x / (size.width * progress)) * progress;
-      path.lineTo(x, y);
+    
+
+    
+    // Simpler approach for "Filling": Use a standard rect but with a wavy right edge.
+    path.reset();
+    path.moveTo(0, 0); // Top Left
+    
+    // Draw wavy line to bottom
+    const step = 2.0; // Smoother
+    final rightEdgeX = size.width * progress;
+    
+    for (double y = 0; y <= size.height; y += step) {
+       // "180%" feeling: Larger amplitude, smoother curves
+       // Amp: 25, Freq Divisor: 40
+       final x = rightEdgeX + sin((y + offset) / 40) * 25 * (1.1 - progress); 
+       path.lineTo(x, y);
     }
+
+    path.lineTo(0, size.height); // Bottom Left
+    path.close();
+
+    path.lineTo(0, 0); // Top Left
+    
+    // Wavy Right Edge
+    for(double y = 0; y <= size.height; y+= 2) {
+       // x varies based on y
+       final wave = sin((y + offset * 10) / 15) * 8; // Amplitude 8
+       path.lineTo((size.width * progress) + wave, y);
+    }
+    
     path.lineTo(size.width * progress, size.height);
     path.close();
 
@@ -199,7 +248,7 @@ class LiquidWavePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(LiquidWavePainter oldDelegate) =>
-      oldDelegate.progress != progress;
+      oldDelegate.progress != progress || oldDelegate.offset != offset;
 }
 
 class LoginPage extends StatefulWidget {

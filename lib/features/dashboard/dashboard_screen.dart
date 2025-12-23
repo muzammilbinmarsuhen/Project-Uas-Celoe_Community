@@ -1,7 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../app/routes.dart';
-import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
@@ -247,11 +245,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     // Logic to determine ImageProvider for the small avatar
     ImageProvider avatarImage;
     if (widget.userAvatar != null) {
-      if (kIsWeb) {
-        avatarImage = NetworkImage(widget.userAvatar!.path);
-      } else {
-        avatarImage = FileImage(File(widget.userAvatar!.path));
-      }
+      avatarImage = NetworkImage(widget.userAvatar!.path);
     } else {
        avatarImage = const NetworkImage('https://via.placeholder.com/150');
     }

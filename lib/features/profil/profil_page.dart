@@ -129,8 +129,8 @@ class _ProfilPageState extends State<ProfilPage> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    // Dummy Data
-    const name = 'DANDY CANDRA PRATAMA';
+    // Data from User
+    final name = widget.user?.name ?? 'Guest';
     
     ImageProvider? avatarImage;
     if (_pickedFile != null) {
@@ -173,7 +173,7 @@ class _ProfilPageState extends State<ProfilPage> with SingleTickerProviderStateM
                 _buildKelasTab(),
 
                 // TAB 3: EDIT PROFILE
-                const EditProfilFormWidget(),
+                EditProfilFormWidget(user: widget.user),
               ],
             ),
           ),
@@ -198,14 +198,14 @@ class _ProfilPageState extends State<ProfilPage> with SingleTickerProviderStateM
              ),
           ],
         ),
-        child: const Column(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ProfilInfoItemWidget(label: 'E-mail Address', value: 'dandycandrapratama@365.telkomuniversity.ac.id'),
-            ProfilInfoItemWidget(label: 'Program Studi', value: 'S1 Desain Komunikasi Visual'),
-            ProfilInfoItemWidget(label: 'Fakultas', value: 'Fakultas Industri Kreatif'),
+            ProfilInfoItemWidget(label: 'E-mail Address', value: widget.user?.email ?? '-'),
+            const ProfilInfoItemWidget(label: 'Program Studi', value: 'S1 Desain Komunikasi Visual'),
+            const ProfilInfoItemWidget(label: 'Fakultas', value: 'Fakultas Industri Kreatif'),
             
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text('Aktivitas Login', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             SizedBox(height: 16),
             
