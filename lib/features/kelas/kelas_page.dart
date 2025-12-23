@@ -5,6 +5,9 @@ import 'widgets/kelas_tab_bar_widget.dart';
 import 'widgets/materi_card_widget.dart';
 import 'widgets/tugas_kuis_card_widget.dart';
 import 'widgets/empty_state_widget.dart';
+import 'materi_detail_page.dart';
+import 'tugas_detail_page.dart';
+import 'quiz/quiz_intro_page.dart';
 
 class KelasPage extends StatefulWidget {
   final Course? course; // Optional, can be used for dynamic data later
@@ -55,25 +58,22 @@ class _KelasPageState extends State<KelasPage> with SingleTickerProviderStateMix
   // Mock Data: Tugas & Kuis
   final List<Map<String, dynamic>> _tugasKuisList = [
     {
-      'type': 'QUIZ',
+      'type': 'Quiz',
       'title': 'Quiz Review 01',
       'deadline': '26 Februari 2021 23:59 WIB',
       'isCompleted': true,
-      'icon': Icons.chat_bubble_outline,
     },
     {
       'type': 'Tugas',
       'title': 'Tugas 01 - UID Android Mobile Game',
       'deadline': '26 Februari 2021 23:59 WIB',
-      'isCompleted': true, // Pending/Grey
-      'icon': Icons.description_outlined,
+      'isCompleted': true, 
     },
     {
-       'type': 'Pertemuan 3',
+       'type': 'Kuis',
        'title': 'Kuis - Assessment 2',
        'deadline': '26 Februari 2021 23:59 WIB',
-       'isCompleted': true,
-       'icon': Icons.chat_bubble_outline,
+       'isCompleted': false,
     },
   ];
 
@@ -174,7 +174,7 @@ class _KelasPageState extends State<KelasPage> with SingleTickerProviderStateMix
 
   Widget _buildMateriList() {
     if (_materiList.isEmpty) {
-      return const EmptyStateWidget(message: 'Tidak Ada Materi Hari Ini'); // Reuse for consisteny
+      return const EmptyStateWidget(message: 'Tidak Ada Materi Hari Ini'); 
     }
 
     return ListView.builder(
@@ -182,10 +182,6 @@ class _KelasPageState extends State<KelasPage> with SingleTickerProviderStateMix
       itemCount: _materiList.length,
       itemBuilder: (context, index) {
         final item = _materiList[index];
-        
-        // Simple Staggered Animation Logic
-        // We can wrap this in a TweenAnimationBuilder inside the widget or here. 
-        // For cleaner code, we can pass an animation controller or just use the widget's internal builder
         
         return TweenAnimationBuilder<double>(
            tween: Tween(begin: 0, end: 1),
@@ -197,10 +193,18 @@ class _KelasPageState extends State<KelasPage> with SingleTickerProviderStateMix
                title: item['title'],
                subtext: item['subtext'],
                isCompleted: item['isCompleted'],
-               animation: AlwaysStoppedAnimation(value), // Pass current animation value
+               animation: AlwaysStoppedAnimation(value), 
                onTap: () {
-                 // Open Detail View (Section 5)
-                 // Navigator.push(...)
+                 // Debug Print as requested
+                 debugPrint("Materi tapped: ${item['title']}");
+                 
+                 // Navigate to MateriDetailPage
+                 Navigator.push(
+                   context,
+                   MaterialPageRoute(
+                     builder: (context) => MateriDetailPage(title: item['title']),
+                   ),
+                 );
                },
              );
            }, 
@@ -225,9 +229,34 @@ class _KelasPageState extends State<KelasPage> with SingleTickerProviderStateMix
            duration: Duration(milliseconds: 400 + (index * 100)),
            curve: Curves.easeOutQuart,
            builder: (context, value, child) {
-             return TugasKuisCardWidget(
-               item: item,
-               animation: AlwaysStoppedAnimation(value),
+             return GestureDetector(
+               onTap: () {
+                  final type = (item['type'] as String).toLowerCase();
+                  debugPrint("Tugas/Kuis tapped: $type - ${item['title']}");
+
+                  if (type.contains('quiz') || type.contains('kuis')) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => QuizIntroPage(title: item['title']),
+                      ),
+                    );
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TugasDetailPage(
+                          title: item['title'],
+                          deadline: item['deadline'],
+                        ),
+                      ),
+                    );
+                  }
+               },
+               child: TugasKuisCardWidget(
+                 item: item,
+                 animation: AlwaysStoppedAnimation(value),
+               ),
              );
            },
         );

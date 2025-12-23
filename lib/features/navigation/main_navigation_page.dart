@@ -4,7 +4,7 @@ import '../../core/models.dart';
 import '../../core/widgets/liquid_bottom_nav_bar.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../kelas/kelas_page.dart';
-import '../notifications/notifications_screen.dart';
+import '../notifikasi/notifikasi_page.dart';
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({super.key});
@@ -87,7 +87,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     final List<Widget> pages = [
       DashboardScreen(username: _user.name, email: _user.email),
       const KelasPage(),
-      const NotificationsScreen(),
+      const NotifikasiPage(),
     ];
 
     return Scaffold(
@@ -95,7 +95,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         index: _currentIndex,
         children: pages,
       ),
-      bottomNavigationBar: LiquidBottomNavBar(
+      bottomNavigationBar: LmsBottomNavBar(
         currentIndex: _currentIndex,
         onTap: _onTap,
         icons: const [

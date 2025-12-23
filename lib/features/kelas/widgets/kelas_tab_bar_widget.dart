@@ -11,28 +11,33 @@ class KelasTabBarWidget extends StatelessWidget {
     return Container(
       height: 50,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: const Color.fromRGBO(0, 0, 0, 0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: TabBar(
         controller: controller,
-        indicator: const UnderlineTabIndicator(
-          borderSide: BorderSide(color: Colors.black87, width: 3),
-          insets: EdgeInsets.symmetric(horizontal: 40),
+        indicator: BoxDecoration(
+          border: const Border(
+            bottom: BorderSide(
+              color: Colors.white,
+              width: 3.0,
+            ),
+          ),
         ),
-        labelColor: Colors.black87,
-        unselectedLabelColor: Colors.grey,
-        labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        indicatorSize: TabBarIndicatorSize.label,
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.white.withValues(alpha: 0.6),
+        labelStyle: GoogleFonts.poppins(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+        ),
+        unselectedLabelStyle: GoogleFonts.poppins(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
         tabs: const [
-          Tab(text: 'Materi'),
-          Tab(text: 'Tugas Dan Kuis'),
+          Tab(text: "Materi"),
+          Tab(text: "Tugas Dan Kuis"),
         ],
       ),
     );
