@@ -5,6 +5,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/models.dart';
 import '../profil/profil_page.dart';
+import '../kelas/kelas_page.dart';
+
+import '../notifikasi/pengumuman_page.dart';
+import '../notifikasi/pengumuman_detail_page.dart';
+import '../kelas/tugas_detail_page.dart';
 
 class DashboardScreen extends StatefulWidget {
   final String username;
@@ -102,11 +107,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               ),
 
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 2. Upcoming Task
+                    // 2. Upcoming Task (Priority)
                     SlideTransition(
                       position: _taskSlide,
                       child: FadeTransition(
@@ -115,21 +120,36 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                              Text(
-                              'Prioritas Hari Ini',
-                              style: GoogleFonts.poppins(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
+                               'Tugas Yang Akan Datang',
+                               style: GoogleFonts.poppins(
+                                 fontSize: 16,
+                                 fontWeight: FontWeight.bold,
+                                 color: Colors.black87,
+                               ),
+                             ),
+                            const SizedBox(height: 12),
+                            GestureDetector(
+                                onTap: () {
+                                  // Direct navigation to Task/Assignment Detail
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => const TugasDetailPage(
+                                            assignmentId: 101, // Mock
+                                            title: 'Tugas 01 - UID Android Mobile Game',
+                                            deadline: 'Jumat, 26 Februari | 23:59 WIB'
+                                        )
+                                    ),
+                                  );
+                                },
+                                child: _buildPriorityTaskCard(),
                             ),
-                            const SizedBox(height: 16),
-                            _buildPremiumTaskCard(),
                           ],
                         ),
                       ),
                     ),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24),
 
                     // 3. Announcements
                     SlideTransition(
@@ -137,40 +157,44 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       child: FadeTransition(
                         opacity: _announceFade,
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'Info Kampus',
+                                  'Pengumuman Terakhir',
                                   style: GoogleFonts.poppins(
-                                    fontSize: 18,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black87,
                                   ),
                                 ),
-                                TextButton(
-                                  onPressed: () {},
+                                GestureDetector(
+                                  onTap: () {
+                                     Navigator.push(context, MaterialPageRoute(builder: (context) => const PengumumanPage()));
+                                  },
                                   child: Text(
-                                    'Semua',
+                                    'Lihat Semua',
                                     style: GoogleFonts.poppins(
-                                      color: const Color(0xFFA82E2E),
+                                      color: const Color(0xFFA82E2E), // Maroon
                                       fontWeight: FontWeight.w600,
+                                      fontSize: 12,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 12),
-                            _buildInfoCard(),
+                            _buildAnnouncementCard(context),
                           ],
                         ),
                       ),
                     ),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24),
 
-                    // 4. Course Progress
+                    // 4. Course Progress (Scrollable Vertical List)
                     SlideTransition(
                       position: _courseSlide,
                       child: FadeTransition(
@@ -179,50 +203,16 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Lanjutkan Belajar',
+                              'Progres Kelas',
                               style: GoogleFonts.poppins(
-                                fontSize: 18,
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black87,
                               ),
                             ),
-                            const SizedBox(height: 16),
-                            // Horizontal Scroll list
-                            SizedBox(
-                              height: 140, 
-                              child: ListView(
-                                scrollDirection: Axis.horizontal,
-                                clipBehavior: Clip.none,
-                                children: [
-                                  _buildMiniCourseCard(
-                                    title: "Flutter Basics", 
-                                    progress: 0.75, 
-                                    color: Colors.blueAccent
-                                  ),
-                                  const SizedBox(width: 16),
-                                  _buildMiniCourseCard(
-                                    title: "UI/UX Design", 
-                                    progress: 0.40, 
-                                    color: Colors.orangeAccent
-                                  ),
-                                  const SizedBox(width: 16),
-                                  _buildMiniCourseCard(
-                                    title: "Python Data", 
-                                    progress: 0.10, 
-                                    color: Colors.greenAccent
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            // Vertical list for latest specific course
-                             _buildCourseCard(
-                              imageUrl: 'https://via.placeholder.com/150',
-                              semester: '2021/2',
-                              title: 'Bahasa Inggris: Business and Scientific',
-                              progress: 0.90,
-                              backgroundColor: Colors.indigoAccent,
-                            ),
+                            const SizedBox(height: 12),
+                            // Vertical List only
+                            _buildCourseList(context),
                             const SizedBox(height: 80),
                           ],
                         ),
@@ -238,11 +228,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     );
   }
 
-
-
   Widget _buildHeader(BuildContext context) {
-    
-    // Logic to determine ImageProvider for the small avatar
     ImageProvider avatarImage;
     if (widget.userAvatar != null) {
       avatarImage = NetworkImage(widget.userAvatar!.path);
@@ -250,56 +236,57 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
        avatarImage = const NetworkImage('https://via.placeholder.com/150');
     }
 
+    // Personalized Text
+    final String greetingName = widget.username.isEmpty ? 'MAHASISWA' : widget.username.toUpperCase();
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(24, 40, 24, 32),
       decoration: const BoxDecoration(
-        color: Color(0xFFA82E2E), // Primary Red
+        color: Color(0xFFA82E2E), // Red Background
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(36),
-          bottomRight: Radius.circular(36),
+          bottomLeft: Radius.circular(30),
+          bottomRight: Radius.circular(30),
         ),
         boxShadow: [
           BoxShadow(
              color: Color(0x40A82E2E),
-             blurRadius: 24,
-             offset: Offset(0, 12),
+             blurRadius: 15,
+             offset: Offset(0, 5),
           )
         ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // LEFT: Greeting and Name
-          Flexible(
+          // Greeting Text
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Halo, Selamat Pagi',
+                  'Hallo,',
                   style: GoogleFonts.poppins(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 4),
                 Text(
-                  widget.username,
-                   style: GoogleFonts.poppins(
+                  greetingName,
+                  style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
-                  textAlign: TextAlign.left,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
-
-          // RIGHT: 'Mahasiswa' Card AND Logout Button
+          
+          // Badge + Logout
           Row(
             children: [
               GestureDetector(
@@ -309,7 +296,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     MaterialPageRoute(
                       builder: (context) => ProfilPage(
                         user: User(
-                          id: 'user_1',
+                          id: '1', 
                           name: widget.username,
                           email: widget.email,
                           avatarUrl: 'https://via.placeholder.com/150',
@@ -321,47 +308,39 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   );
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
+                    color: Colors.white, // White Badge
                     borderRadius: BorderRadius.circular(50),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                       Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                          image: DecorationImage(
-                            image: avatarImage,
-                            fit: BoxFit.cover,
-                          ),
+                       Text(
+                        'MAHASISWA',
+                        style: GoogleFonts.poppins(
+                           color: const Color(0xFFA82E2E), // Red Text
+                           fontSize: 11,
+                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        'Mahasiswa',
-                        style: GoogleFonts.poppins(
-                           color: Colors.white,
-                           fontSize: 13,
-                           fontWeight: FontWeight.w600,
-                        ),
+                      CircleAvatar(
+                        radius: 12,
+                        backgroundImage: avatarImage,
                       ),
                     ],
                   ),
                 ),
               ),
               const SizedBox(width: 12),
-              // LOGOUT BUTTON
+              // LOGOUT BUTTON (Preserved)
               Material(
-                color: const Color(0xFF8B1A1A), // Darker shade of red
+                color: Colors.white.withValues(alpha: 0.2), // Semi-transparent white
                 shape: const CircleBorder(),
                 child: IconButton(
-                  icon: const Icon(Icons.logout_rounded, color: Colors.white, size: 22),
+                  icon: const Icon(Icons.logout_rounded, color: Colors.white, size: 20),
                   onPressed: () {
                     showDialog(
                       context: context,
@@ -404,255 +383,229 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     );
   }
 
-  Widget _buildPremiumTaskCard() {
+  Widget _buildPriorityTaskCard() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [const Color(0xFFB91C1C), const Color(0xFFEF4444)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(24),
+        color: const Color(0xFFA82E2E), // Merah
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFB91C1C).withValues(alpha: 0.4),
+            color: const Color(0xFFA82E2E).withValues(alpha: 0.4),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: Stack(
-        children: [
-          Positioned(
-            right: -20,
-            top: -20,
-            child: Icon(Icons.assignment_outlined, size: 100, color: Colors.white.withValues(alpha: 0.1)),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  'Deadline Segera',
-                  style: GoogleFonts.poppins(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Desain UI/UX Mobile',
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Tugas 01 - Wireframing',
-                style: GoogleFonts.poppins(
-                  color: Colors.white70,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                 children: [
-                   const Icon(Icons.access_time_rounded, color: Colors.white, size: 16),
-                   const SizedBox(width: 8),
-                   Text(
-                     'Besok, 23:59 WIB',
-                     style: GoogleFonts.poppins(
-                       color: Colors.white,
-                       fontWeight: FontWeight.w600,
-                     ),
-                   ),
-                 ],
-              )
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey[100]!),
-        boxShadow: const [
-          BoxShadow(
-             color: Colors.black12,
-             blurRadius: 15,
-             offset: Offset(0, 5),
-          )
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            height: 50, width: 50,
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFF7ED),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.campaign_outlined, color: Colors.orange, size: 28),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Maintenance Sistem',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-                Text(
-                  'Sistem akan down pada Sabtu malam.',
-                  style: GoogleFonts.poppins(color: Colors.grey[600], fontSize: 12),
-                ),
-              ],
-            ),
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMiniCourseCard({required String title, required double progress, required Color color}) {
-    return Container(
-      width: 140,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))
-        ],
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-             padding: const EdgeInsets.all(8),
-             decoration: BoxDecoration(
-               color: color.withValues(alpha: 0.1),
-               shape: BoxShape.circle,
-             ),
-             child: Icon(Icons.class_rounded, color: color, size: 20),
+          Text(
+            'DESAIN ANTARMUKA & PENGALAMAN PENGGUNA',
+            style: GoogleFonts.poppins(
+              color: Colors.white.withValues(alpha: 0.9),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title, 
-                maxLines: 1, 
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 13),
+          const SizedBox(height: 12),
+          Center(
+            child: Text(
+              'Tugas 01 – UID Android Mobile Game',
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
               ),
-              const SizedBox(height: 8),
-              LinearProgressIndicator(
-                value: progress,
-                backgroundColor: Colors.grey[100],
-                valueColor: AlwaysStoppedAnimation(color),
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ],
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 20),
+          
+          Center(
+            child: Column(
+              children: [
+                Text(
+                  'Waktu Pengumpulan',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 12,
+                  ),
+                ),
+                 Text(
+                  'Jumat 26 Februari, 23:59 WIB',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
           )
         ],
       ),
     );
   }
-  
-  Widget _buildCourseCard({
-    required String imageUrl,
-    required String semester,
-    required String title,
-    required double progress,
-    required Color backgroundColor,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              color: backgroundColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(
-              Icons.book_rounded,
-              color: backgroundColor,
-              size: 32,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  semester,
-                  style: GoogleFonts.poppins(
-                    color: Colors.grey[500],
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                  ),
+
+  Widget _buildAnnouncementCard(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+         Navigator.push(context, MaterialPageRoute(builder: (context) => const PengumumanDetailPage(index: 0)));
+      },
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+             BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Thumbnail
+            Container(
+              width: 60, height: 60,
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(12),
+                image: const DecorationImage(
+                  // Placeholder for LMS / Announcement generic image
+                  image: AssetImage('assets/images/Learning Management System.png'), 
+                  fit: BoxFit.cover,
                 ),
-                Text(
-                  title,
-                  style: GoogleFonts.poppins(
-                    color: Colors.black87,
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 12),
-                Stack(
-                  children: [
-                    Container(height: 6, decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(3))),
-                    FractionallySizedBox(
-                      widthFactor: progress,
-                      child: Container(
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: backgroundColor,
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                      ),
-                    )
-                  ],
-                )
-              ],
+              ),
+              child: const Icon(Icons.campaign, color: Colors.grey), // Fallback
             ),
-          ),
-        ],
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Maintenance Pra UAS Semester Genap',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                    maxLines: 2, overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '10 Jan 2024 • Admin CeLOE',
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: Colors.grey),
+          ],
+        ),
       ),
     );
   }
+
+  Widget _buildCourseList(BuildContext context) {
+    // Exact list from the prompt image
+    final courses = [
+      {'title': 'DESAIN ANTARMUKA & PENGALAMAN PENGGUNA D4SM-42-03 [ADY]', 'progress': 0.89, 'img': 'assets/images/ui_ux.png', 'color': Colors.orangeAccent, 'semester': '2021/2'},
+      {'title': 'KEWARGANEGARAAN\nD4SM-41-GAB1 [BBO], JUMAT 2', 'progress': 0.58, 'img': 'assets/images/garuda.png', 'color': Colors.redAccent, 'semester': '2021/2'},
+      {'title': 'SISTEM OPERASI\nD4SM-44-02 [DDS]', 'progress': 0.90, 'img': 'assets/images/os.png', 'color': Colors.blueGrey, 'semester': '2021/2'},
+      {'title': 'PEMROGRAMAN PERANGKAT BERGERAK MULTIMEDIA\nD4SM-41-GAB1 [APJ]', 'progress': 0.90, 'img': 'assets/images/mobile.png', 'color': Colors.cyan, 'semester': '2021/2'},
+      {'title': 'BAHASA INGGRIS: BUSINESS AND SCIENTIFIC\nD4SM-41-GAB1 [ARS]', 'progress': 0.90, 'img': 'assets/images/english.png', 'color': Colors.grey, 'semester': '2021/2'},
+      {'title': 'PEMROGRAMAN MULTIMEDIA INTERAKTIF\nD4SM-43-04 [TPR]', 'progress': 0.90, 'img': 'assets/images/interactive.png', 'color': Colors.blue[800], 'semester': '2021/2'},
+      {'title': 'OLAH RAGA\nD3TT-44-02 [EYR]', 'progress': 0.90, 'img': 'assets/images/sports.png', 'color': Colors.purpleAccent, 'semester': '2021/2'},
+    ];
+
+    return Column(
+      children: courses.map((course) {
+        return GestureDetector(
+          onTap: () {
+            // 1-Click to Materials
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => KelasPage(
+                  courseId: 1, // Mock
+                  title: (course['title'] as String).split('\n')[0], // Use first line as title
+                ),
+              ),
+            );
+          },
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 20),
+            padding: const EdgeInsets.all(0),
+            color: Colors.transparent, // clean layout
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                 // Thumbnail (Visual representation)
+                 Container(
+                   width: 80, height: 80,
+                   decoration: BoxDecoration(
+                     color: (course['color'] as Color?)?.withValues(alpha: 0.2) ?? Colors.grey[200],
+                     borderRadius: BorderRadius.circular(4), // Slightly square as in image
+                   ),
+                   alignment: Alignment.center,
+                   child: Text(
+                     (course['title'] as String).substring(0, 1),
+                     style: GoogleFonts.poppins(
+                       fontSize: 32, 
+                       fontWeight: FontWeight.bold, 
+                       color: course['color'] as Color?
+                     ),
+                   ),
+                 ),
+                 const SizedBox(width: 16),
+                 Expanded(
+                   child: Column(
+                     crossAxisAlignment: CrossAxisAlignment.start,
+                     children: [
+                       Text(
+                         course['semester'] as String,
+                         style: GoogleFonts.poppins(color: Colors.grey[600], fontSize: 10),
+                       ),
+                       const SizedBox(height: 4),
+                       Text(
+                         course['title'] as String,
+                         style: GoogleFonts.poppins(
+                           color: Colors.black87,
+                           fontSize: 12, // Compact font
+                           fontWeight: FontWeight.bold,
+                           height: 1.3,
+                         ),
+                       ),
+                       const SizedBox(height: 8),
+                       // Progress
+                       ClipRRect(
+                         borderRadius: BorderRadius.circular(4),
+                         child: LinearProgressIndicator(
+                           value: course['progress'] as double,
+                           minHeight: 8,
+                           backgroundColor: Colors.grey[200],
+                           valueColor: const AlwaysStoppedAnimation(Color(0xFFA82E2E)),
+                         ),
+                       ),
+                       const SizedBox(height: 4),
+                       Text(
+                         '${((course['progress'] as double) * 100).toInt()}% Selesai',
+                         style: GoogleFonts.poppins(color: Colors.grey[600], fontSize: 10),
+                       ),
+                     ],
+                   ),
+                 )
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
 }

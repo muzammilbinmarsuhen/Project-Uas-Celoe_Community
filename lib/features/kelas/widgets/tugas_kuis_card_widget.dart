@@ -4,11 +4,13 @@ import 'package:google_fonts/google_fonts.dart';
 class TugasKuisCardWidget extends StatelessWidget {
   final Map<String, dynamic> item;
   final Animation<double>? animation;
+  final VoidCallback? onTap;
 
   const TugasKuisCardWidget({
     super.key,
     required this.item,
     this.animation,
+    this.onTap,
   });
 
   @override
@@ -37,91 +39,80 @@ class TugasKuisCardWidget extends StatelessWidget {
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
-          onTap: () {},
+          onTap: onTap,
           borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Row(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Icon Section
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: isQuiz ? const Color(0xFFFFF3E0) : const Color(0xFFE3F2FD),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    isQuiz ? Icons.quiz_outlined : Icons.description_outlined,
-                    color: isQuiz ? Colors.orange[800] : Colors.blue[700],
-                    size: 24,
-                  ),
+                // 1. Top Row: Badge & Check
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: type == 'Tugas' ? const Color(0xFF5686E1) : const Color(0xFF5686E1).withValues(alpha: 0.8), 
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                         // If type contains 'Quiz' or 'Kuis', display 'QUIZ', else 'Tugas'
+                         isQuiz ? 'QUIZ' : 'Tugas',
+                         style: GoogleFonts.poppins(
+                           color: Colors.white,
+                           fontSize: 12,
+                           fontWeight: FontWeight.bold,
+                         ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.check_circle,
+                      color: isCompleted ? const Color(0xFF4CAF50) : Colors.grey[300],
+                      size: 24,
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 16),
                 
-                // Content Section
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Badge
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: isQuiz 
-                              ? const Color(0xFFFFF3E0) 
-                              : const Color(0xFFE3F2FD),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          isQuiz ? 'Kuis' : 'Tugas',
+                const SizedBox(height: 16),
+
+                // 2. Middle Row: Icon & Title
+                Row(
+                   crossAxisAlignment: CrossAxisAlignment.start,
+                   children: [
+                     // Big Icon
+                     Icon(
+                       isQuiz ? Icons.chat_bubble_outline_rounded : Icons.description_outlined,
+                       size: 40,
+                       color: Colors.black87,
+                     ),
+                     const SizedBox(width: 16),
+                     
+                     // Title
+                     Expanded(
+                        child:  Text(
+                          title,
                           style: GoogleFonts.poppins(
-                            fontSize: 10,
+                            color: Colors.black87,
+                            fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: isQuiz ? Colors.orange[800] : Colors.blue[700],
+                            height: 1.3,
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        title,
-                        style: GoogleFonts.poppins(
-                          color: Colors.black87,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          height: 1.4,
-                        ),
-                      ),
-                       const SizedBox(height: 8),
-                      // Deadline
-                      Row(
-                        children: [
-                          Icon(Icons.access_time_rounded, size: 12, color: Colors.grey[500]),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              'Tenggat: $deadline',
-                              style: GoogleFonts.poppins(
-                                color: Colors.grey[500],
-                                fontSize: 11,
-                                fontWeight: FontWeight.normal,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                     ),
+                   ],
                 ),
-                
-                 // Check Icon
-                const SizedBox(width: 12),
-                Icon(
-                  Icons.check_circle,
-                  color: isCompleted ? const Color(0xFF4CAF50) : Colors.grey[300],
-                  size: 24,
+
+                const SizedBox(height: 12),
+
+                // 3. Bottom: Deadline Text
+                Text(
+                  deadline.isNotEmpty ? deadline : 'Tenggat Waktu : -',
+                  style: GoogleFonts.poppins(
+                    color: Colors.grey[500],
+                    fontSize: 12,
+                    fontWeight: FontWeight.normal,
+                  ),
                 ),
               ],
             ),

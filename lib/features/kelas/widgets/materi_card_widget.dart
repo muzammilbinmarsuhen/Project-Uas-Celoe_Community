@@ -42,64 +42,59 @@ class MateriCardWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Row(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Icon / Badge Section
-                Column(
+                // 1. Top Row: Badge and Check Icon
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE3F2FD), // Light Blue
+                        color: const Color(0xFF5686E1), // Design Blue
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         'Pertemuan ${index + 1}',
                         style: GoogleFonts.poppins(
-                          color: const Color(0xFF1976D2), // Blue
-                          fontSize: 10,
+                          color: Colors.white,
+                          fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
+                    Icon(
+                      Icons.check_circle,
+                      color: isCompleted ? const Color(0xFF4CAF50) : Colors.grey[300],
+                      size: 24,
+                    ),
                   ],
                 ),
-                const SizedBox(width: 16),
                 
-                // Content Section
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: GoogleFonts.poppins(
-                          color: Colors.black87,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          height: 1.4,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        subtext,
-                        style: GoogleFonts.poppins(
-                          color: Colors.grey[500],
-                          fontSize: 12,
-                          fontWeight: FontWeight.normal,
-                        ),
-                      ),
-                    ],
+                const SizedBox(height: 16),
+
+                // 2. Content: Title
+                Text(
+                  title,
+                  style: GoogleFonts.poppins(
+                    color: Colors.black87,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    height: 1.3,
                   ),
                 ),
                 
-                // Check Icon
-                const SizedBox(width: 12),
-                Icon(
-                  Icons.check_circle,
-                  color: isCompleted ? const Color(0xFF4CAF50) : Colors.grey[300],
-                  size: 24,
+                const SizedBox(height: 8),
+
+                // 3. Subtitle / Meta
+                Text(
+                  subtext,
+                  style: GoogleFonts.poppins(
+                    color: Colors.grey[500],
+                    fontSize: 12,
+                    fontWeight: FontWeight.normal,
+                  ),
                 ),
               ],
             ),

@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/models.dart';
 import '../../core/widgets/liquid_bottom_nav_bar.dart';
 import '../dashboard/dashboard_screen.dart';
-import '../kelas/kelas_page.dart';
+import '../courses/courses_screen.dart';
 import '../notifikasi/notifikasi_page.dart';
 
 class MainNavigationPage extends StatefulWidget {
@@ -86,7 +86,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
     final List<Widget> pages = [
       DashboardScreen(username: _user.name, email: _user.email),
-      const KelasPage(),
+      const CoursesScreen(),
       const NotifikasiPage(),
     ];
 

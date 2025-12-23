@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../../core/models/lms_models.dart';
+import '../../core/services/api_service.dart';
 import '../kelas/materi_detail_page.dart';
 import '../kelas/tugas_detail_page.dart';
 import '../kelas/quiz/quiz_intro_page.dart';
@@ -13,33 +16,7 @@ class NotifikasiPage extends StatefulWidget {
 
 class _NotifikasiPageState extends State<NotifikasiPage> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  final List<NotificationItem> _notifications = [
-    NotificationItem(
-      title: 'Anda telah mengirimkan pengajuan tugas untuk Pengumpulan Laporan Akhir Assessment 3 (Tugas Besar)',
-      timestamp: '3 Hari 9 Jam Yang Lalu',
-      type: NotificationType.document,
-    ),
-    NotificationItem(
-      title: 'Kuis "Konsep Dasar Pemrograman" akan segera dimulai dalam 1 jam.',
-      timestamp: '1 Hari 2 Jam Yang Lalu',
-      type: NotificationType.quiz,
-    ),
-    NotificationItem(
-      title: 'Materi baru "Pengenalan Flutter" telah ditambahkan ke kelas Mobile Programming.',
-      timestamp: '2 Hari Yang Lalu',
-      type: NotificationType.document,
-    ),
-    NotificationItem(
-      title: 'Reminder: Deadline tugas "Analisis Algoritma" besok malam.',
-      timestamp: '4 Hari Yang Lalu',
-      type: NotificationType.quiz,
-    ),
-     NotificationItem(
-      title: 'Nilai untuk Assessment 2 telah dipublikasikan. Silakan cek di menu Nilai.',
-      timestamp: '5 Hari Yang Lalu',
-      type: NotificationType.document,
-    ),
-  ];
+  late Future<List<NotificationItem>> _notificationsFuture;
 
   @override
   void initState() {
@@ -48,6 +25,7 @@ class _NotifikasiPageState extends State<NotifikasiPage> with SingleTickerProvid
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
+    _notificationsFuture = Provider.of<ApiService>(context, listen: false).getNotifications();
     _controller.forward();
   }
 
@@ -78,57 +56,63 @@ class _NotifikasiPageState extends State<NotifikasiPage> with SingleTickerProvid
         backgroundColor: Colors.white,
         elevation: 0,
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-        itemCount: _notifications.length,
-        itemBuilder: (context, index) {
-          final item = _notifications[index];
-          return SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, 0.5),
-              end: Offset.zero,
-            ).animate(
-              CurvedAnimation(
-                parent: _controller,
-                curve: Interval(
-                  index * 0.1,
-                  1.0,
-                  curve: Curves.easeOutCubic,
-                ),
-              ),
-            ),
-            child: FadeTransition(
-              opacity: Tween<double>(begin: 0.0, end: 1.0).animate(
-                CurvedAnimation(
-                  parent: _controller,
-                  curve: Interval(
-                    index * 0.1,
-                    1.0,
-                    curve: Curves.easeOut,
+      body: FutureBuilder<List<NotificationItem>>(
+        future: _notificationsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator(color: Color(0xFFA82E2E)));
+          }
+          
+          final notifications = snapshot.data ?? [];
+          
+          if (notifications.isEmpty) {
+             return Center(
+               child: Text(
+                 'Tidak ada notifikasi',
+                 style: GoogleFonts.poppins(color: Colors.grey),
+               ),
+             );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+            itemCount: notifications.length,
+            itemBuilder: (context, index) {
+              final item = notifications[index];
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, 0.5),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(
+                    parent: _controller,
+                    curve: Interval(
+                      index * 0.1,
+                      1.0,
+                      curve: Curves.easeOutCubic,
+                    ),
                   ),
                 ),
-              ),
-              child: _NotificationCard(item: item),
-            ),
+                child: FadeTransition(
+                  opacity: Tween<double>(begin: 0.0, end: 1.0).animate(
+                    CurvedAnimation(
+                      parent: _controller,
+                      curve: Interval(
+                        index * 0.1,
+                        1.0,
+                        curve: Curves.easeOut,
+                      ),
+                    ),
+                  ),
+                  child: _NotificationCard(item: item),
+                ),
+              );
+            },
           );
         },
       ),
     );
   }
-}
-
-enum NotificationType { document, quiz }
-
-class NotificationItem {
-  final String title;
-  final String timestamp;
-  final NotificationType type;
-
-  NotificationItem({
-    required this.title,
-    required this.timestamp,
-    required this.type,
-  });
 }
 
 class _NotificationCard extends StatelessWidget {
@@ -141,7 +125,7 @@ class _NotificationCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 16.0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: item.isRead ? Colors.white : const Color(0xFFFFF8F8), // Highlight unread
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -156,24 +140,33 @@ class _NotificationCard extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: () {
-            debugPrint("Notification tapped: ${item.title}");
-            
-            // Basic Logic to route based on Title keywords or Type
-            // In a real app, NotificationItem would have a 'targetId' and 'route'
-            if (item.type == NotificationType.quiz || item.title.toLowerCase().contains('kuis')) {
-               Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const QuizIntroPage(title: 'Kuis - Notifikasi')),
-               );
-            } else if (item.title.toLowerCase().contains('tugas') || item.title.toLowerCase().contains('assessment')) {
-               Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const TugasDetailPage(title: 'Detail Tugas', deadline: 'Besok')),
-               );
+            if (item.relatedId != null) {
+              if (item.title.toLowerCase().contains('kuis') || (item.relatedType == 'quiz')) {
+                 Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => QuizIntroPage(quizId: item.relatedId!, title: item.title)),
+                 );
+              } else if (item.title.toLowerCase().contains('tugas') || (item.relatedType == 'assignment')) {
+                 Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => TugasDetailPage(
+                      assignmentId: item.relatedId!, 
+                      title: item.title, 
+                      deadline: 'Lihat Detail',
+                    )),
+                 );
+              } else {
+                 Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MateriDetailPage(
+                      materialId: item.relatedId!, 
+                      title: item.title
+                    )),
+                 );
+              }
             } else {
-               Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const MateriDetailPage(title: 'Materi Terkait')),
+               ScaffoldMessenger.of(context).showSnackBar(
+                 const SnackBar(content: Text('Detail tidak tersedia')),
                );
             }
           },
@@ -191,9 +184,9 @@ class _NotificationCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
-                    item.type == NotificationType.document
-                        ? Icons.description_outlined
-                        : Icons.quiz_outlined,
+                    item.title.toLowerCase().contains('kuis') || item.title.toLowerCase().contains('quiz')
+                        ? Icons.quiz_outlined 
+                        : Icons.description_outlined,
                     color: Colors.black,
                     size: 24,
                   ),
@@ -214,7 +207,7 @@ class _NotificationCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        item.timestamp,
+                        item.createdAt, // Using createdAt as simpler timestamp string for now
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           color: Colors.grey[500],

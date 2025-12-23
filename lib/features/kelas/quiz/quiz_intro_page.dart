@@ -3,9 +3,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'quiz_question_page.dart';
 
 class QuizIntroPage extends StatelessWidget {
+  final int quizId;
   final String title;
 
-  const QuizIntroPage({super.key, required this.title});
+  const QuizIntroPage({super.key, required this.quizId, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +86,7 @@ class QuizIntroPage extends StatelessWidget {
                 onPressed: () {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => const QuizQuestionPage()),
+                    MaterialPageRoute(builder: (context) => QuizQuestionPage(quizId: quizId, title: title)),
                   );
                 },
                 style: ElevatedButton.styleFrom(

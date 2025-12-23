@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../core/models.dart';
+import 'package:provider/provider.dart';
+import '../../core/models/lms_models.dart';
+import '../../core/services/api_service.dart';
 import 'widgets/kelas_tab_bar_widget.dart';
 import 'widgets/materi_card_widget.dart';
 import 'widgets/tugas_kuis_card_widget.dart';
@@ -10,9 +12,16 @@ import 'tugas_detail_page.dart';
 import 'quiz/quiz_intro_page.dart';
 
 class KelasPage extends StatefulWidget {
-  final Course? course; // Optional, can be used for dynamic data later
+  final int courseId; // Passed from course list
+  final String title;
+  final bool hideBackButton;
 
-  const KelasPage({super.key, this.course});
+  const KelasPage({
+    super.key, 
+    required this.courseId, 
+    required this.title,
+    this.hideBackButton = false,
+  });
 
   @override
   State<KelasPage> createState() => _KelasPageState();
@@ -20,67 +29,22 @@ class KelasPage extends StatefulWidget {
 
 class _KelasPageState extends State<KelasPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
-  // Mock Data: Materi
-  final List<Map<String, dynamic>> _materiList = [
-    {
-      'title': '01 - Pengantar User Interface Design',
-      'subtext': '3 URLs, 2 Files, 3 Interactive Content',
-      'isCompleted': true,
-    },
-    {
-      'title': '02 - Konsep User Interface Design',
-      'subtext': '2 URLs, 1 Kuis, 3 Files, 1 Tugas',
-      'isCompleted': true,
-    },
-    {
-      'title': '03 - Interaksi pada User Interface Design',
-      'subtext': '3 URLs, 2 Files, 3 Interactive Content',
-      'isCompleted': true,
-    },
-    {
-       'title': '04 - Ethnographic Observation',
-       'subtext': '3 URLs, 2 Files, 3 Interactive Content',
-       'isCompleted': true,
-    },
-    {
-       'title': '05 - UID Testing',
-       'subtext': '3 URLs, 2 Files, 3 Interactive Content',
-       'isCompleted': true,
-    },
-    {
-       'title': '06 - Assessment 1',
-       'subtext': '3 URLs, 2 Files, 3 Interactive Content',
-       'isCompleted': true,
-    },
-  ];
-
-  // Mock Data: Tugas & Kuis
-  final List<Map<String, dynamic>> _tugasKuisList = [
-    {
-      'type': 'Quiz',
-      'title': 'Quiz Review 01',
-      'deadline': '26 Februari 2021 23:59 WIB',
-      'isCompleted': true,
-    },
-    {
-      'type': 'Tugas',
-      'title': 'Tugas 01 - UID Android Mobile Game',
-      'deadline': '26 Februari 2021 23:59 WIB',
-      'isCompleted': true, 
-    },
-    {
-       'type': 'Kuis',
-       'title': 'Kuis - Assessment 2',
-       'deadline': '26 Februari 2021 23:59 WIB',
-       'isCompleted': false,
-    },
-  ];
+  late Future<List<dynamic>> _dataFuture;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _dataFuture = _fetchData();
+  }
+
+  Future<List<dynamic>> _fetchData() async {
+    final api = Provider.of<ApiService>(context, listen: false);
+    return Future.wait([
+      api.getCourseDetail(widget.courseId),
+      api.getMaterials(widget.courseId),
+      api.getCourseTasksQuizzes(widget.courseId),
+    ]);
   }
 
   @override
@@ -91,97 +55,122 @@ class _KelasPageState extends State<KelasPage> with SingleTickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    // Dynamic or Fallback Title
-    final String courseTitle = widget.course?.title ?? 'DESAIN ANTARMUKA & PENGALAMAN PENGGUNA D4SM-42-03 [ADY]';
-
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
-      body: Column(
-        children: [
-          // 1. APP BAR
-          // We use a custom container to achieve the specific rounded bottom corners + content layout
-          Container(
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 16, // SafeArea top
-              left: 16,
-              right: 16,
-              bottom: 24,
-            ),
-            decoration: const BoxDecoration(
-              color: Color(0xFFA82E2E), // Merah LMS
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(24),
-                bottomRight: Radius.circular(24),
+      body: FutureBuilder<List<dynamic>>(
+        future: _dataFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator(color: Color(0xFFA82E2E)));
+          }
+
+          final course = snapshot.data?[0] as Course?;
+          final materials = snapshot.data?[1] as List<CourseMaterial>? ?? [];
+          final tasksQuizzes = snapshot.data?[2] as List<dynamic>? ?? [];
+          
+          // Fallback if course info fails
+          final displayTitle = course != null ? '${course.title} [ADY]' : widget.title;
+
+          // Mock data if everything empty (Robust Fallback)
+          final finalMaterials = materials.isNotEmpty ? materials : _getMockMaterials();
+          final finalTasks = tasksQuizzes.isNotEmpty ? tasksQuizzes : _getMockTasks();
+
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              // 1. Red Header Background
+              Container(
+                height: 155, 
+                decoration: const BoxDecoration(
+                  color: Color(0xFFA82E2E), // Merah LMS
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(30),
+                    bottomRight: Radius.circular(30),
+                  ),
+                ),
               ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Top Row: Back Button & Title
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+
+              // 2. Main Content
+              Positioned.fill(
+                child: Column(
                   children: [
-                    InkWell(
-                      onTap: () => Navigator.pop(context),
-                      borderRadius: BorderRadius.circular(20),
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Icon(Icons.arrow_back, color: Colors.white),
+                    // Custom AppBar
+                    SafeArea(
+                      bottom: false,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (!widget.hideBackButton)
+                              InkWell(
+                                onTap: () => Navigator.pop(context),
+                                borderRadius: BorderRadius.circular(20),
+                                child: const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Icon(Icons.arrow_back, color: Colors.white),
+                                ),
+                              ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 10.0),
+                                child: Text(
+                                  displayTitle.toUpperCase(),
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    height: 1.4,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    
+                    const SizedBox(height: 8),
+
+                    // Floating TabBar
+                    KelasTabBarWidget(controller: _tabController),
+
+                    // Tab Views
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.only(top: 10.0),
-                        child: Text(
-                          courseTitle.toUpperCase(),
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            height: 1.4,
-                          ),
+                        padding: const EdgeInsets.only(top: 16.0),
+                        child: TabBarView(
+                          controller: _tabController,
+                          children: [
+                            _buildMateriList(finalMaterials),
+                            _buildTugasKuisList(finalTasks),
+                          ],
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
-                
-                // 2. TAB BAR (DI BAWAH APP BAR)
-                KelasTabBarWidget(controller: _tabController),
-              ],
-            ),
-          ),
-
-          // 3. & 4. TAB VIEWS
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                // TAB "MATERI"
-                _buildMateriList(),
-
-                // TAB "TUGAS DAN KUIS"
-                _buildTugasKuisList(),
-              ],
-            ),
-          ),
-        ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildMateriList() {
-    if (_materiList.isEmpty) {
-      return const EmptyStateWidget(message: 'Tidak Ada Materi Hari Ini'); 
+  Widget _buildMateriList(List<CourseMaterial> materials) {
+    if (materials.isEmpty) {
+      return const EmptyStateWidget(message: 'Tidak Ada Materi Hari Ini');
     }
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: _materiList.length,
+      itemCount: materials.length,
       itemBuilder: (context, index) {
-        final item = _materiList[index];
+        final item = materials[index];
         
         return TweenAnimationBuilder<double>(
            tween: Tween(begin: 0, end: 1),
@@ -190,19 +179,19 @@ class _KelasPageState extends State<KelasPage> with SingleTickerProviderStateMix
            builder: (context, value, child) {
              return MateriCardWidget(
                index: index,
-               title: item['title'],
-               subtext: item['subtext'],
-               isCompleted: item['isCompleted'],
-               animation: AlwaysStoppedAnimation(value), 
+               title: item.title,
+               subtext: '${item.attachments.length} Files', 
+               isCompleted: item.completed, 
+               animation: AlwaysStoppedAnimation(value),
                onTap: () {
-                 // Debug Print as requested
-                 debugPrint("Materi tapped: ${item['title']}");
-                 
-                 // Navigate to MateriDetailPage
                  Navigator.push(
                    context,
                    MaterialPageRoute(
-                     builder: (context) => MateriDetailPage(title: item['title']),
+                     builder: (context) => MateriDetailPage(
+                        materialId: item.id,
+                        title: item.title,
+                        description: item.description.isNotEmpty ? item.description : 'Tidak ada deskripsi.',
+                     ),
                    ),
                  );
                },
@@ -213,32 +202,48 @@ class _KelasPageState extends State<KelasPage> with SingleTickerProviderStateMix
     );
   }
 
-  Widget _buildTugasKuisList() {
-    if (_tugasKuisList.isEmpty) {
+  Widget _buildTugasKuisList(List<dynamic> items) {
+    if (items.isEmpty) {
        return const EmptyStateWidget();
     }
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: _tugasKuisList.length,
+      itemCount: items.length,
       itemBuilder: (context, index) {
-        final item = _tugasKuisList[index];
+        final itemMap = items[index];
+        final id = itemMap['id'];
+        final type = itemMap['type'];
+        final title = itemMap['title'];
+        final deadlineRaw = itemMap['deadline'];
+
+        // Formatting logic
+        String deadlineStr = '';
+        if (type == 'quiz') {
+           deadlineStr = 'Deadline: $deadlineRaw'; 
+        } else {
+           deadlineStr = 'Deadline: $deadlineRaw';
+        }
 
         return TweenAnimationBuilder<double>(
            tween: Tween(begin: 0, end: 1),
            duration: Duration(milliseconds: 400 + (index * 100)),
            curve: Curves.easeOutQuart,
            builder: (context, value, child) {
-             return GestureDetector(
+             return TugasKuisCardWidget(
+               item: { 
+                 'type': type == 'quiz' ? 'Quiz' : 'Tugas',
+                 'title': title,
+                 'deadline': deadlineStr,
+                 'isCompleted': itemMap['status'] == 'completed',
+               },
+               animation: AlwaysStoppedAnimation(value),
                onTap: () {
-                  final type = (item['type'] as String).toLowerCase();
-                  debugPrint("Tugas/Kuis tapped: $type - ${item['title']}");
-
-                  if (type.contains('quiz') || type.contains('kuis')) {
+                  if (type == 'quiz') {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => QuizIntroPage(title: item['title']),
+                        builder: (context) => QuizIntroPage(quizId: id, title: title),
                       ),
                     );
                   } else {
@@ -246,21 +251,54 @@ class _KelasPageState extends State<KelasPage> with SingleTickerProviderStateMix
                       context,
                       MaterialPageRoute(
                         builder: (context) => TugasDetailPage(
-                          title: item['title'],
-                          deadline: item['deadline'],
+                          assignmentId: id,
+                          title: title,
+                          deadline: deadlineStr,
                         ),
                       ),
                     );
                   }
                },
-               child: TugasKuisCardWidget(
-                 item: item,
-                 animation: AlwaysStoppedAnimation(value),
-               ),
              );
            },
         );
       },
     );
+  }
+  
+  List<CourseMaterial> _getMockMaterials() {
+    return [
+      CourseMaterial(
+        id: 1, 
+        title: '01 - Pengantar User Interface Design', 
+        description: '3 URLs, 2 Files, 3 Interactive Content', 
+        completed: false,
+        attachments: [
+          Attachment(id: 1, title: 'Slide', type: 'pdf', url: '', completed: false),
+        ]
+      ),
+      CourseMaterial(id: 2, title: '02 - Konsep User Interface Design', description: '2 URLs, 1 Kuis, 3 Files, 1 Tugas', completed: true, attachments: []),
+      CourseMaterial(id: 3, title: '03 - Interaksi pada User Interface Design', description: '3 URLs, 2 Files, 3 Interactive Content', completed: false, attachments: []),
+      CourseMaterial(id: 4, title: '04 - Ethnographic Observation', description: '3 URLs, 2 Files, 3 Interactive Content', completed: false, attachments: []),
+    ];
+  }
+
+  List<dynamic> _getMockTasks() {
+    return [
+      {
+        'id': 1,
+        'type': 'assignment',
+        'title': 'Tugas 01 - UID Android Mobile Game',
+        'deadline': DateTime.now().add(const Duration(days: 3)).toString(),
+        'status': 'not_started',
+      },
+      {
+        'id': 2,
+        'type': 'quiz',
+        'title': 'Quiz Review 01',
+        'deadline': DateTime.now().add(const Duration(days: 1)).toString(),
+        'status': 'not_started',
+      },
+    ];
   }
 }

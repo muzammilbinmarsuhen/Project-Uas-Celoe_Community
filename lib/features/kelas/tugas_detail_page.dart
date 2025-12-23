@@ -3,11 +3,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'upload_tugas_page.dart';
 
 class TugasDetailPage extends StatefulWidget {
+  final int assignmentId;
   final String title;
   final String deadline;
 
   const TugasDetailPage({
     super.key,
+    required this.assignmentId,
     required this.title,
     required this.deadline,
   });

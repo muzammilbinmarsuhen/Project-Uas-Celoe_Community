@@ -20,7 +20,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Mock data
   late User currentUser;
-  late List<Course> allCourses;
   // late List<Widget> _screens; // Removed to build dynamically
 
   @override
@@ -43,18 +42,6 @@ class _HomeScreenState extends State<HomeScreen> {
       avatarUrl: 'https://via.placeholder.com/150',
     );
 
-    allCourses = [
-      Course(
-        id: '1',
-        title: 'Introduction to Flutter',
-        description: 'Learn the basics of Flutter development.',
-        instructor: 'Jane Smith',
-        progress: 0.6,
-        modules: [
-            // ... 
-        ],
-      ),
-    ];
   }
 
   void _onItemTapped(int index) {
@@ -80,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
         userAvatar: _avatarFile,
         onAvatarChanged: _handleAvatarChanged,
       ),
-      CoursesScreen(courses: allCourses),
+      const CoursesScreen(),
       const NotificationScreen(), 
     ];
 
