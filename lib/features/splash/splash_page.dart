@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../app/routes.dart';
+import '../../core/routes/routes.dart';
 
 class FloatingParticlesPainter extends CustomPainter {
   final double animationValue;

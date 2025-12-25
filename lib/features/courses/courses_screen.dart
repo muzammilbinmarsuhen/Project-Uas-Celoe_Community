@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../core/models/lms_models.dart';
-import '../../core/services/api_service.dart';
-import '../kelas/kelas_page.dart';
+import '../../core/models.dart';
+import '../../core/data/dummy_data.dart';
+import 'course_detail_screen.dart';
 
 class CoursesScreen extends StatefulWidget {
   const CoursesScreen({super.key});
@@ -12,13 +11,8 @@ class CoursesScreen extends StatefulWidget {
 }
 
 class _CoursesScreenState extends State<CoursesScreen> {
-  late Future<List<Course>> _coursesFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _coursesFuture = Provider.of<ApiService>(context, listen: false).getCourses();
-  }
+  // Use Dummy Data
+  final List<Course> _courses = DummyData.courses;
 
   @override
   Widget build(BuildContext context) {
@@ -26,51 +20,22 @@ class _CoursesScreenState extends State<CoursesScreen> {
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         title: const Text('Kelas Saya'),
-        backgroundColor: const Color(0xFFB22222), // Merah LMS
+        backgroundColor: const Color(0xFFA82E2E), // Merah LMS
         elevation: 0,
         centerTitle: true,
       ),
-      body: FutureBuilder<List<Course>>(
-        future: _coursesFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: Color(0xFFB22222)));
-          }
-          
-          final courses = snapshot.data ?? [];
-
-          // Mock data fallback if API returns empty (for demo purposes if backend not running)
-          // In production, you might just show empty state. 
-          // However, user requested "All menus connect", so let's rely on API or robust mock in ApiService.
-          // ApiService currently returns [] on error.
-          
-          if (courses.isEmpty) {
-             return Center(
+      body: _courses.isEmpty
+          ? Center(
                child: Column(
                  mainAxisAlignment: MainAxisAlignment.center,
                  children: [
                    const Icon(Icons.school_outlined, size: 64, color: Colors.grey),
                    const SizedBox(height: 16),
                    const Text('Belum ada kelas yang diambil'),
-                   const SizedBox(height: 16),
-                   ElevatedButton(
-                     onPressed: () {
-                       setState(() {
-                         _coursesFuture = Provider.of<ApiService>(context, listen: false).getCourses();
-                       });
-                     },
-                     style: ElevatedButton.styleFrom(
-                       backgroundColor: const Color(0xFFB22222)
-                     ),
-                     child: const Text('Refresh'),
-                   )
                  ],
                ),
-             );
-          }
-
-          // Responsive Layout
-          return LayoutBuilder(
+            )
+          : LayoutBuilder(
             builder: (context, constraints) {
               if (constraints.maxWidth > 600) {
                 // Tablet/Web: Grid
@@ -82,21 +47,19 @@ class _CoursesScreenState extends State<CoursesScreen> {
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
                   ),
-                  itemCount: courses.length,
-                  itemBuilder: (context, index) => _buildCourseCard(courses[index]),
+                  itemCount: _courses.length,
+                  itemBuilder: (context, index) => _buildCourseCard(_courses[index]),
                 );
               } else {
                 // Mobile: List
                 return ListView.builder(
-                  itemCount: courses.length,
+                  itemCount: _courses.length,
                   padding: const EdgeInsets.all(16),
-                  itemBuilder: (context, index) => _buildCourseCard(courses[index]),
+                  itemBuilder: (context, index) => _buildCourseCard(_courses[index]),
                 );
               }
             },
-          );
-        },
-      ),
+          ),
     );
   }
 
@@ -111,10 +74,10 @@ class _CoursesScreenState extends State<CoursesScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => KelasPage(
+              builder: (context) => CourseDetailScreen(
                 courseId: course.id,
                 title: course.title,
-                hideBackButton: false, // Showing back button since we are navigating from List
+                hideBackButton: false, 
               ),
             ),
           );
@@ -134,9 +97,6 @@ class _CoursesScreenState extends State<CoursesScreen> {
                       )
                     : null,
               ),
-              child: course.thumbnail == null || course.thumbnail!.isEmpty
-                  ? Center(child: Icon(Icons.image, color: Colors.grey[500], size: 40))
-                  : null,
             ),
             Padding(
               padding: const EdgeInsets.all(12.0),
@@ -151,14 +111,14 @@ class _CoursesScreenState extends State<CoursesScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Semester ${course.semester}',
+                    course.semester, // Changed from Semester + value
                     style: TextStyle(color: Colors.grey[600], fontSize: 12),
                   ),
                   const SizedBox(height: 8),
                   LinearProgressIndicator(
-                    value: course.progress / 100, // Assuming 0-100 from API or 0-1
+                    value: course.progress / 100, 
                     backgroundColor: Colors.grey[200],
-                    valueColor: const AlwaysStoppedAnimation(Color(0xFFB22222)),
+                    valueColor: const AlwaysStoppedAnimation(Color(0xFFA82E2E)),
                   ),
                   const SizedBox(height: 4),
                   Align(

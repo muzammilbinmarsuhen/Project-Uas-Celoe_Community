@@ -2,10 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../../core/models/lms_models.dart';
+import '../../core/models.dart';
 import '../../core/services/api_service.dart';
-import 'video_materi_page.dart';
-import 'tugas_detail_page.dart';
+import 'video_player_screen.dart'; // Renamed
+import 'assignment_detail_screen.dart'; // Renamed
 import 'quiz/quiz_intro_page.dart';
 
 class MateriDetailPage extends StatefulWidget {
@@ -218,7 +218,7 @@ class _MateriDetailPageState extends State<MateriDetailPage> with SingleTickerPr
                 if (type == 'quiz') {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => QuizIntroPage(quizId: id, title: title)));
                 } else {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => TugasDetailPage(assignmentId: id, title: title, deadline: deadline)));
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => AssignmentDetailScreen(assignmentId: id, title: title, deadline: deadline)));
                 }
              },
           ),

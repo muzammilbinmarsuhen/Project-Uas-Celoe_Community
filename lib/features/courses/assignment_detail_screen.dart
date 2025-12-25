@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'upload_tugas_page.dart';
+import 'assignment_upload_screen.dart';
 
-class TugasDetailPage extends StatefulWidget {
+class AssignmentDetailScreen extends StatefulWidget {
   final int assignmentId;
   final String title;
   final String deadline;
 
-  const TugasDetailPage({
+  const AssignmentDetailScreen({
     super.key,
     required this.assignmentId,
     required this.title,
@@ -15,10 +15,10 @@ class TugasDetailPage extends StatefulWidget {
   });
 
   @override
-  State<TugasDetailPage> createState() => _TugasDetailPageState();
+  State<AssignmentDetailScreen> createState() => _AssignmentDetailScreenState();
 }
 
-class _TugasDetailPageState extends State<TugasDetailPage> {
+class _AssignmentDetailScreenState extends State<AssignmentDetailScreen> {
   bool _isSubmitted = false;
 
   @override

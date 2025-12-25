@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart'; // For kIsWeb
 import 'package:http/http.dart' as http;
-import '../models/lms_models.dart';
+import '../models.dart';
 
 class ApiService extends ChangeNotifier {
   // Use 127.0.0.1 for Web/iOS/Desktop, 10.0.2.2 for Android Emulator

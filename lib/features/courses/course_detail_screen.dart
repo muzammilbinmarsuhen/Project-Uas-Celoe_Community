@@ -1,11 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/models.dart';
+import '../../core/data/dummy_data.dart'; // Use DummyData
+import 'widgets/kelas_tab_bar_widget.dart';
+import 'widgets/materi_card_widget.dart';
+import 'widgets/tugas_kuis_card_widget.dart';
+import 'widgets/empty_state_widget.dart';
+import 'material_detail_screen.dart'; // Renamed
+import 'assignment_detail_screen.dart'; // Renamed
+import 'quiz/quiz_intro_page.dart';
 
 class CourseDetailScreen extends StatefulWidget {
-  final Course? course;
+  final int courseId; // Passed from course list
+  final String title;
+  final bool hideBackButton;
 
-  const CourseDetailScreen({super.key, this.course});
+  const CourseDetailScreen({
+    super.key, 
+    required this.courseId, 
+    required this.title,
+    this.hideBackButton = false,
+  });
 
   @override
   State<CourseDetailScreen> createState() => _CourseDetailScreenState();
@@ -13,65 +28,7 @@ class CourseDetailScreen extends StatefulWidget {
 
 class _CourseDetailScreenState extends State<CourseDetailScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
-  // Mock Modules Data specific for this UI
-  final List<Map<String, dynamic>> _meetings = [
-    {
-      'title': '01 - Pengantar User Interface Design',
-      'stats': '3 URLs, 2 Files, 3 Interactive Content',
-      'isCompleted': true, // Grey check
-    },
-    {
-      'title': '02 - Konsep User Interface Design',
-      'stats': '2 URLs, 1 Kuis, 3 Files, 1 Tugas',
-      'isCompleted': true, // Green check
-    },
-    {
-      'title': '03 - Interaksi pada User Interface Design',
-      'stats': '3 URLs, 2 Files, 3 Interactive Content',
-      'isCompleted': true,
-    },
-    {
-      'title': '04 - Ethnographic Observation',
-      'stats': '3 URLs, 2 Files, 3 Interactive Content',
-      'isCompleted': true,
-    },
-    {
-      'title': '05 - UID Testing',
-      'stats': '3 URLs, 2 Files, 3 Interactive Content',
-      'isCompleted': true,
-    },
-    {
-      'title': '06 - Assessment 1',
-      'stats': '3 URLs, 2 Files, 3 Interactive Content',
-      'isCompleted': true,
-    },
-  ];
-
-  // Mock Assignments Data
-  final List<Map<String, dynamic>> _assignments = [
-    {
-      'type': 'QUIZ',
-      'title': 'Quiz Review 01',
-      'deadline': '26 Februari 2021 23:59 WIB',
-      'isCompleted': true,
-      'icon': Icons.quiz_outlined, // Fallback icon, will try to use custom if possible or stick to Material
-    },
-    {
-      'type': 'Tugas',
-      'title': 'Tugas 01 - UID Android Mobile Game',
-      'deadline': '26 Februari 2021 23:59 WIB',
-      'isCompleted': true, // Grey/Pending
-      'icon': Icons.assignment_outlined,
-    },
-    {
-      'type': 'Pertemuan 3', // Label in screenshot says "Pertemuan 3" but icon is Quiz
-      'title': 'Kuis - Assessment 2',
-      'deadline': '26 Februari 2021 23:59 WIB',
-      'isCompleted': true,
-      'icon': Icons.quiz_outlined,
-    },
-  ];
+  // late Future<List<dynamic>> _dataFuture; // Removed API
 
   @override
   void initState() {
@@ -87,106 +44,87 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> with SingleTick
 
   @override
   Widget build(BuildContext context) {
-    // Determine course title from widget.course or fallback default
-    final courseTitle = widget.course?.title ?? 'DESAIN ANTARMUKA & PENGALAMAN PENGGUNA D4SM-42-03 [ADY]';
-
+    // USE DUMMY DATA DIRECTLY
+    final materials = DummyData.materialsCourse1; 
+    final tasksQuizzes = DummyData.tasksCourse1;
+    
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5), // Light grey background
-      body: Column(
+      backgroundColor: const Color(0xFFF5F5F5),
+      body: Stack(
+        fit: StackFit.expand,
         children: [
-          // Custom Header
+          // 1. Red Header Background
           Container(
-            padding: const EdgeInsets.only(top: 48, left: 16, right: 16, bottom: 24),
+            height: 155, 
             decoration: const BoxDecoration(
-              color: Color(0xFFA82E2E), // Primary Red
+              color: Color(0xFFA82E2E), // Merah LMS
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(24),
-                bottomRight: Radius.circular(24),
+                bottomLeft: Radius.circular(30),
+                bottomRight: Radius.circular(30),
               ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 10.0),
-                        child: Text(
-                          courseTitle.toUpperCase(),
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            height: 1.4,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                // Custom Tab Bar Container
-                Container(
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color.fromRGBO(0, 0, 0, 0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: TabBar(
-                    controller: _tabController,
-                    indicator: const UnderlineTabIndicator(
-                      borderSide: BorderSide(color: Colors.black87, width: 3),
-                      insets: EdgeInsets.symmetric(horizontal: 40), // Short indicator
-                    ),
-                    labelColor: Colors.black87,
-                    unselectedLabelColor: Colors.grey,
-                    labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                    tabs: const [
-                      Tab(text: 'Materi'),
-                      Tab(text: 'Tugas Dan Kuis'),
-                    ],
-                  ),
-                ),
-              ],
             ),
           ),
 
-          // Content
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
+          // 2. Main Content
+          Positioned.fill(
+            child: Column(
               children: [
-                // Materi List with Animation
-                ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _meetings.length,
-                  itemBuilder: (context, index) {
-                    final item = _meetings[index];
-                    return _buildAnimatedCard(item, index);
-                  },
+                // Custom AppBar
+                SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (!widget.hideBackButton)
+                          InkWell(
+                            onTap: () => Navigator.pop(context),
+                            borderRadius: BorderRadius.circular(20),
+                            child: const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Icon(Icons.arrow_back, color: Colors.white),
+                            ),
+                          ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 10.0),
+                            child: Text(
+                              widget.title.toUpperCase(),
+                              style: GoogleFonts.poppins(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                height: 1.4,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                // Tugas List with Animation
-                ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _assignments.length,
-                  itemBuilder: (context, index) {
-                    final item = _assignments[index];
-                    return _buildAnimatedAssignmentCard(item, index);
-                  },
+                
+                const SizedBox(height: 8),
+
+                // Floating TabBar
+                KelasTabBarWidget(controller: _tabController),
+
+                // Tab Views
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 16.0),
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildMateriList(materials),
+                        _buildTugasKuisList(tasksQuizzes),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -196,187 +134,103 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> with SingleTick
     );
   }
 
-  Widget _buildAnimatedCard(Map<String, dynamic> item, int index) {
-    // ... (Existing Materi Card Logic)
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: 1),
-      duration: Duration(milliseconds: 500 + (index * 100)),
-      curve: Curves.easeOutQuart,
-      builder: (context, value, child) {
-        return Transform.translate(
-          offset: Offset(0, 50 * (1 - value)),
-          child: Opacity(
-            opacity: value,
-            child: child,
-          ),
+  Widget _buildMateriList(List<CourseMaterial> materials) {
+    if (materials.isEmpty) {
+      return const EmptyStateWidget(message: 'Tidak Ada Materi Hari Ini');
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: materials.length,
+      itemBuilder: (context, index) {
+        final item = materials[index];
+        
+        return TweenAnimationBuilder<double>(
+           tween: Tween(begin: 0, end: 1),
+           duration: Duration(milliseconds: 400 + (index * 100)),
+           curve: Curves.easeOutQuart,
+           builder: (context, value, child) {
+             return MateriCardWidget(
+               index: index,
+               title: item.title,
+               subtext: item.description, 
+               isCompleted: item.completed, 
+               animation: AlwaysStoppedAnimation(value),
+               onTap: () {
+                 Navigator.push(
+                   context,
+                   MaterialPageRoute(
+                     builder: (context) => MateriDetailPage(
+                        materialId: item.id,
+                        title: item.title,
+                        description: item.description.isNotEmpty ? item.description : 'Tidak ada deskripsi.',
+                     ),
+                   ),
+                 );
+               },
+             );
+           }, 
         );
       },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: const Color.fromRGBO(0, 0, 0, 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-             Padding(
-               padding: const EdgeInsets.all(16.0),
-               child: Row(
-                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                 children: [
-                   Container(
-                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                     decoration: BoxDecoration(
-                       color: const Color(0xFF5DADE2), // Light Blue
-                       borderRadius: BorderRadius.circular(20),
-                     ),
-                     child: Text(
-                       'Pertemuan ${index + 1}',
-                       style: GoogleFonts.poppins(
-                         color: Colors.white,
-                         fontSize: 12,
-                         fontWeight: FontWeight.w500,
-                       ),
-                     ),
-                   ),
-                   Icon(
-                     Icons.check_circle,
-                     color: index == 0 ? Colors.grey[400] : Colors.green, // Example logic
-                     size: 24,
-                   ),
-                 ],
-               ),
-             ),
-             Padding(
-               padding: const EdgeInsets.symmetric(horizontal: 16),
-               child: Text(
-                 item['title'],
-                 style: GoogleFonts.poppins(
-                   color: Colors.black87,
-                   fontSize: 16,
-                   fontWeight: FontWeight.w600,
-                 ),
-               ),
-             ),
-             const SizedBox(height: 24),
-             Padding(
-               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-               child: Text(
-                 item['stats'],
-                 style: GoogleFonts.poppins(
-                   color: Colors.grey[400],
-                   fontSize: 12,
-                   fontWeight: FontWeight.normal,
-                 ),
-               ),
-             ),
-          ],
-        ),
-      ),
     );
   }
 
-  Widget _buildAnimatedAssignmentCard(Map<String, dynamic> item, int index) {
-     return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: 1),
-      duration: Duration(milliseconds: 500 + (index * 100)),
-      curve: Curves.easeOutQuart,
-      builder: (context, value, child) {
-        return Transform.translate(
-          offset: Offset(0, 50 * (1 - value)),
-          child: Opacity(
-            opacity: value,
-            child: child,
-          ),
+  Widget _buildTugasKuisList(List<Map<String, dynamic>> items) {
+    if (items.isEmpty) {
+       return const EmptyStateWidget();
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        final itemMap = items[index];
+        final id = itemMap['id'];
+        final type = itemMap['type'];
+        final title = itemMap['title'];
+        final deadlineRaw = itemMap['deadline'];
+
+        // Formatting logic
+        String deadlineStr = 'Deadline: $deadlineRaw';
+
+        return TweenAnimationBuilder<double>(
+           tween: Tween(begin: 0, end: 1),
+           duration: Duration(milliseconds: 400 + (index * 100)),
+           curve: Curves.easeOutQuart,
+           builder: (context, value, child) {
+             return TugasKuisCardWidget(
+               item: { 
+                 'type': type == 'quiz' ? 'Quiz' : 'Tugas',
+                 'title': title,
+                 'deadline': deadlineStr,
+                 'isCompleted': itemMap['status'] == 'completed',
+               },
+               animation: AlwaysStoppedAnimation(value),
+               onTap: () {
+                  if (type == 'quiz') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => QuizIntroPage(quizId: id, title: title),
+                      ),
+                    );
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AssignmentDetailScreen(
+                          assignmentId: id,
+                          title: title,
+                          deadline: deadlineStr,
+                        ),
+                      ),
+                    );
+                  }
+               },
+             );
+           },
         );
       },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: const Color.fromRGBO(0, 0, 0, 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Top Row: Label and Checkbox
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                   Container(
-                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
-                     decoration: BoxDecoration(
-                       color: const Color(0xFF5DADE2), // Light Blue
-                       borderRadius: BorderRadius.circular(8), // More rectangular for assignments
-                     ),
-                     child: Text(
-                       item['type'],
-                       style: GoogleFonts.poppins(
-                         color: Colors.white,
-                         fontSize: 12,
-                         fontWeight: FontWeight.w500,
-                       ),
-                     ),
-                   ),
-                   Icon(
-                     Icons.check_circle,
-                     color: item['title'].toString().contains('01') ? Colors.grey[400] : Colors.green, // Grey for middle item example
-                     size: 24,
-                   ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              
-              // Icon and Title Row
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(item['icon'], size: 40, color: Colors.black87),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Text(
-                      item['title'],
-                      style: GoogleFonts.poppins(
-                        color: Colors.black87,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        height: 1.2,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              
-              // Footer: Deadline
-              Text(
-                'Tenggat Waktu : ${item['deadline']}',
-                style: GoogleFonts.poppins(
-                  color: Colors.grey[400],
-                  fontSize: 12,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

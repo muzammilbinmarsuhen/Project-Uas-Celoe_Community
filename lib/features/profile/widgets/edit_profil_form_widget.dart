@@ -24,7 +24,7 @@ class _EditProfilFormWidgetState extends State<EditProfilFormWidget> {
   }
 
   void _initControllers() {
-    final parts = widget.user?.name.split(' ') ?? ['User'];
+    final parts = widget.user?.username.split(' ') ?? ['User'];
     _firstNameController = TextEditingController(text: parts.first);
     _lastNameController = TextEditingController(text: parts.length > 1 ? parts.sublist(1).join(' ') : '');
     _emailController = TextEditingController(text: widget.user?.email ?? '');
@@ -34,7 +34,7 @@ class _EditProfilFormWidgetState extends State<EditProfilFormWidget> {
   void didUpdateWidget(EditProfilFormWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.user != oldWidget.user) {
-      final parts = widget.user?.name.split(' ') ?? ['User'];
+      final parts = widget.user?.username.split(' ') ?? ['User'];
       _firstNameController.text = parts.first;
       _lastNameController.text = parts.length > 1 ? parts.sublist(1).join(' ') : '';
       _emailController.text = widget.user?.email ?? '';

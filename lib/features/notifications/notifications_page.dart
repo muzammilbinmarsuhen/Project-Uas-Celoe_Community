@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
-import '../../core/models/lms_models.dart';
-import '../../core/services/api_service.dart';
-import '../kelas/materi_detail_page.dart';
-import '../kelas/tugas_detail_page.dart';
-import '../kelas/quiz/quiz_intro_page.dart';
+import '../../core/data/dummy_data.dart'; // Dummy Data
+import '../courses/assignment_detail_screen.dart'; // Renamed
 
 class NotifikasiPage extends StatefulWidget {
   const NotifikasiPage({super.key});
@@ -16,7 +12,8 @@ class NotifikasiPage extends StatefulWidget {
 
 class _NotifikasiPageState extends State<NotifikasiPage> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Future<List<NotificationItem>> _notificationsFuture;
+  // Use Dummy Data directly
+  final List<Map<String, dynamic>> _notifications = DummyData.notifications;
 
   @override
   void initState() {
@@ -25,7 +22,6 @@ class _NotifikasiPageState extends State<NotifikasiPage> with SingleTickerProvid
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-    _notificationsFuture = Provider.of<ApiService>(context, listen: false).getNotifications();
     _controller.forward();
   }
 
@@ -40,10 +36,11 @@ class _NotifikasiPageState extends State<NotifikasiPage> with SingleTickerProvid
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        // leading: IconButton(
+        //   icon: const Icon(Icons.arrow_back, color: Colors.black),
+        //   onPressed: () => Navigator.of(context).pop(), 
+        // ), // No back button needed if it's a main tab
+        automaticallyImplyLeading: false, 
         title: Text(
           'Notifikasi',
           style: GoogleFonts.poppins(
@@ -56,29 +53,18 @@ class _NotifikasiPageState extends State<NotifikasiPage> with SingleTickerProvid
         backgroundColor: Colors.white,
         elevation: 0,
       ),
-      body: FutureBuilder<List<NotificationItem>>(
-        future: _notificationsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: Color(0xFFA82E2E)));
-          }
-          
-          final notifications = snapshot.data ?? [];
-          
-          if (notifications.isEmpty) {
-             return Center(
+      body: _notifications.isEmpty
+          ? Center(
                child: Text(
                  'Tidak ada notifikasi',
                  style: GoogleFonts.poppins(color: Colors.grey),
                ),
-             );
-          }
-
-          return ListView.builder(
+            )
+          : ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-            itemCount: notifications.length,
+            itemCount: _notifications.length,
             itemBuilder: (context, index) {
-              final item = notifications[index];
+              final item = _notifications[index];
               return SlideTransition(
                 position: Tween<Offset>(
                   begin: const Offset(0, 0.5),
@@ -108,24 +94,27 @@ class _NotifikasiPageState extends State<NotifikasiPage> with SingleTickerProvid
                 ),
               );
             },
-          );
-        },
-      ),
+          ),
     );
   }
 }
 
 class _NotificationCard extends StatelessWidget {
-  final NotificationItem item;
+  final Map<String, dynamic> item;
 
   const _NotificationCard({required this.item});
 
   @override
   Widget build(BuildContext context) {
+    final title = item['title'] as String;
+    final body = item['body'] as String;
+    final date = item['date'] as String;
+    final isRead = item['isRead'] as bool;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16.0),
       decoration: BoxDecoration(
-        color: item.isRead ? Colors.white : const Color(0xFFFFF8F8), // Highlight unread
+        color: isRead ? Colors.white : const Color(0xFFFFF8F8), // Highlight unread
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -140,35 +129,21 @@ class _NotificationCard extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: () {
-            if (item.relatedId != null) {
-              if (item.title.toLowerCase().contains('kuis') || (item.relatedType == 'quiz')) {
+             // Mock Navigation based on title string (Simple logic for now)
+             if (title.contains('Redesign')) {
                  Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => QuizIntroPage(quizId: item.relatedId!, title: item.title)),
-                 );
-              } else if (item.title.toLowerCase().contains('tugas') || (item.relatedType == 'assignment')) {
-                 Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => TugasDetailPage(
-                      assignmentId: item.relatedId!, 
-                      title: item.title, 
+                    MaterialPageRoute(builder: (context) => const AssignmentDetailScreen(
+                      assignmentId: 203, 
+                      title: 'Tugas 2: Redesign Halaman Login', 
                       deadline: 'Lihat Detail',
                     )),
                  );
-              } else {
-                 Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => MateriDetailPage(
-                      materialId: item.relatedId!, 
-                      title: item.title
-                    )),
+             } else {
+                 ScaffoldMessenger.of(context).showSnackBar(
+                   const SnackBar(content: Text('Detail notifikasi')),
                  );
-              }
-            } else {
-               ScaffoldMessenger.of(context).showSnackBar(
-                 const SnackBar(content: Text('Detail tidak tersedia')),
-               );
-            }
+             }
           },
           highlightColor: const Color(0xFFB22222).withValues(alpha: 0.1),
           splashColor: const Color(0xFFB22222).withValues(alpha: 0.1),
@@ -184,7 +159,7 @@ class _NotificationCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
-                    item.title.toLowerCase().contains('kuis') || item.title.toLowerCase().contains('quiz')
+                    title.toLowerCase().contains('kuis') || title.toLowerCase().contains('quiz')
                         ? Icons.quiz_outlined 
                         : Icons.description_outlined,
                     color: Colors.black,
@@ -197,7 +172,7 @@ class _NotificationCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        item.title,
+                        title,
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -207,9 +182,17 @@ class _NotificationCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        item.createdAt, // Using createdAt as simpler timestamp string for now
-                        style: GoogleFonts.poppins(
+                        body,
+                         style: GoogleFonts.poppins(
                           fontSize: 12,
+                          color: Colors.black54,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        date, 
+                        style: GoogleFonts.poppins(
+                          fontSize: 11,
                           color: Colors.grey[500],
                           fontWeight: FontWeight.w500,
                         ),

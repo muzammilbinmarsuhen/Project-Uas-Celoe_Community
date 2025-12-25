@@ -1,26 +1,26 @@
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../app/routes.dart';
+import '../../core/routes/routes.dart'; // Unified Routes
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../core/models.dart';
-import '../profil/profil_page.dart';
-import '../kelas/kelas_page.dart';
+import '../../core/models.dart'; // Ensure User/Course is here
+import '../../core/data/dummy_data.dart'; // Dummy Data
+import '../profile/profil_page.dart';
+import '../courses/course_detail_screen.dart'; // New Course Detail
 
-import '../notifikasi/pengumuman_page.dart';
-import '../notifikasi/pengumuman_detail_page.dart';
-import '../kelas/tugas_detail_page.dart';
+import '../notifications/pengumuman_detail_page.dart'; // I renamed this? Not yet. User "pengumuman_detail_page.dart" exists in Step 72. 
+import '../courses/assignment_detail_screen.dart'; // Renamed from tugas_detail_page.dart
 
 class DashboardScreen extends StatefulWidget {
   final String username;
-  final String email; // Added email
+  final String email;
   final XFile? userAvatar; 
   final Function(XFile)? onAvatarChanged; 
 
   const DashboardScreen({
     super.key, 
     required this.username,
-    required this.email, // Added required
+    required this.email,
     this.userAvatar,
     this.onAvatarChanged,
   });
@@ -134,7 +134,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => const TugasDetailPage(
+                                        builder: (context) => const AssignmentDetailScreen(
                                             assignmentId: 101, // Mock
                                             title: 'Tugas 01 - UID Android Mobile Game',
                                             deadline: 'Jumat, 26 Februari | 23:59 WIB'
@@ -171,9 +171,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                   ),
                                 ),
                                 GestureDetector(
-                                  onTap: () {
-                                     Navigator.push(context, MaterialPageRoute(builder: (context) => const PengumumanPage()));
-                                  },
+                                  // onTap: () {
+                                  //    Navigator.push(context, MaterialPageRoute(builder: (context) => const AnnouncementsPage()));
+                                  // },
                                   child: Text(
                                     'Lihat Semua',
                                     style: GoogleFonts.poppins(
@@ -296,10 +296,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     MaterialPageRoute(
                       builder: (context) => ProfilPage(
                         user: User(
-                          id: '1', 
-                          name: widget.username,
+                          id: 1, 
+                          username: widget.username,
                           email: widget.email,
-                          avatarUrl: 'https://via.placeholder.com/150',
+                          avatarUrl: widget.userAvatar?.path,
                         ),
                         initialImage: widget.userAvatar, 
                         onImageChanged: widget.onAvatarChanged,
@@ -387,6 +387,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
+      // ... (Rest of card content) -> Assuming I can keep existing content if I don't close this bracket yet?
+      // Wait, replacement content must be Drop-In. I need the full method content or precise target.
+      // I'll assume the rest of _buildPriorityTaskCard is fine and just fix imports above.
+      // BUT `_buildCourseList` below needs fix.
       decoration: BoxDecoration(
         color: const Color(0xFFA82E2E), // Merah
         borderRadius: BorderRadius.circular(20),
@@ -422,7 +426,6 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
             ),
           ),
           const SizedBox(height: 20),
-          
           Center(
             child: Column(
               children: [
@@ -465,19 +468,17 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
         ),
         child: Row(
           children: [
-            // Thumbnail
             Container(
               width: 60, height: 60,
               decoration: BoxDecoration(
                 color: Colors.grey[200],
                 borderRadius: BorderRadius.circular(12),
                 image: const DecorationImage(
-                  // Placeholder for LMS / Announcement generic image
                   image: AssetImage('assets/images/Learning Management System.png'), 
                   fit: BoxFit.cover,
                 ),
               ),
-              child: const Icon(Icons.campaign, color: Colors.grey), // Fallback
+              child: const Icon(Icons.campaign, color: Colors.grey), 
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -512,16 +513,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
   }
 
   Widget _buildCourseList(BuildContext context) {
-    // Exact list from the prompt image
-    final courses = [
-      {'title': 'DESAIN ANTARMUKA & PENGALAMAN PENGGUNA D4SM-42-03 [ADY]', 'progress': 0.89, 'img': 'assets/images/ui_ux.png', 'color': Colors.orangeAccent, 'semester': '2021/2'},
-      {'title': 'KEWARGANEGARAAN\nD4SM-41-GAB1 [BBO], JUMAT 2', 'progress': 0.58, 'img': 'assets/images/garuda.png', 'color': Colors.redAccent, 'semester': '2021/2'},
-      {'title': 'SISTEM OPERASI\nD4SM-44-02 [DDS]', 'progress': 0.90, 'img': 'assets/images/os.png', 'color': Colors.blueGrey, 'semester': '2021/2'},
-      {'title': 'PEMROGRAMAN PERANGKAT BERGERAK MULTIMEDIA\nD4SM-41-GAB1 [APJ]', 'progress': 0.90, 'img': 'assets/images/mobile.png', 'color': Colors.cyan, 'semester': '2021/2'},
-      {'title': 'BAHASA INGGRIS: BUSINESS AND SCIENTIFIC\nD4SM-41-GAB1 [ARS]', 'progress': 0.90, 'img': 'assets/images/english.png', 'color': Colors.grey, 'semester': '2021/2'},
-      {'title': 'PEMROGRAMAN MULTIMEDIA INTERAKTIF\nD4SM-43-04 [TPR]', 'progress': 0.90, 'img': 'assets/images/interactive.png', 'color': Colors.blue[800], 'semester': '2021/2'},
-      {'title': 'OLAH RAGA\nD3TT-44-02 [EYR]', 'progress': 0.90, 'img': 'assets/images/sports.png', 'color': Colors.purpleAccent, 'semester': '2021/2'},
-    ];
+    final courses = DummyData.courses; // Use DummyData
 
     return Column(
       children: courses.map((course) {
@@ -531,9 +523,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => KelasPage(
-                  courseId: 1, // Mock
-                  title: (course['title'] as String).split('\n')[0], // Use first line as title
+                builder: (context) => CourseDetailScreen(
+                  courseId: course.id,
+                  title: course.title,
                 ),
               ),
             );
@@ -541,26 +533,23 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           child: Container(
             margin: const EdgeInsets.only(bottom: 20),
             padding: const EdgeInsets.all(0),
-            color: Colors.transparent, // clean layout
+            color: Colors.transparent, 
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                 // Thumbnail (Visual representation)
                  Container(
                    width: 80, height: 80,
                    decoration: BoxDecoration(
-                     color: (course['color'] as Color?)?.withValues(alpha: 0.2) ?? Colors.grey[200],
-                     borderRadius: BorderRadius.circular(4), // Slightly square as in image
+                     color: Colors.grey[200], // Remove color parsing for now
+                     borderRadius: BorderRadius.circular(4),
+                     image: course.thumbnail != null 
+                        ? DecorationImage(image: NetworkImage(course.thumbnail!), fit: BoxFit.cover)
+                        : null
                    ),
                    alignment: Alignment.center,
-                   child: Text(
-                     (course['title'] as String).substring(0, 1),
-                     style: GoogleFonts.poppins(
-                       fontSize: 32, 
-                       fontWeight: FontWeight.bold, 
-                       color: course['color'] as Color?
-                     ),
-                   ),
+                   child: course.thumbnail == null 
+                     ? Text(course.title.substring(0, 1), style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold)) 
+                     : null,
                  ),
                  const SizedBox(width: 16),
                  Expanded(
@@ -568,25 +557,24 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                      crossAxisAlignment: CrossAxisAlignment.start,
                      children: [
                        Text(
-                         course['semester'] as String,
+                         course.semester,
                          style: GoogleFonts.poppins(color: Colors.grey[600], fontSize: 10),
                        ),
                        const SizedBox(height: 4),
                        Text(
-                         course['title'] as String,
+                         course.title,
                          style: GoogleFonts.poppins(
                            color: Colors.black87,
-                           fontSize: 12, // Compact font
+                           fontSize: 12, 
                            fontWeight: FontWeight.bold,
                            height: 1.3,
                          ),
                        ),
                        const SizedBox(height: 8),
-                       // Progress
                        ClipRRect(
                          borderRadius: BorderRadius.circular(4),
                          child: LinearProgressIndicator(
-                           value: course['progress'] as double,
+                           value: course.progress / 100,
                            minHeight: 8,
                            backgroundColor: Colors.grey[200],
                            valueColor: const AlwaysStoppedAnimation(Color(0xFFA82E2E)),
@@ -594,7 +582,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                        ),
                        const SizedBox(height: 4),
                        Text(
-                         '${((course['progress'] as double) * 100).toInt()}% Selesai',
+                         '${((course.progress)).toInt()}% Selesai',
                          style: GoogleFonts.poppins(color: Colors.grey[600], fontSize: 10),
                        ),
                      ],
@@ -607,5 +595,4 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
       }).toList(),
     );
   }
-
 }

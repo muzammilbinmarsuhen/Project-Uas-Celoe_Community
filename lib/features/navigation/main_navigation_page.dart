@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../core/models.dart';
+import '../../core/data/dummy_data.dart';
 import '../../core/widgets/liquid_bottom_nav_bar.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../courses/courses_screen.dart';
-import '../notifikasi/notifikasi_page.dart';
+import '../notifications/notifications_page.dart'; // Correct import
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({super.key});
@@ -15,62 +16,55 @@ class MainNavigationPage extends StatefulWidget {
 
 class _MainNavigationPageState extends State<MainNavigationPage> {
   int _currentIndex = 0;
-  bool _isLoading = true;
+  late PageController _pageController;
 
-  User _user = User(
-    id: '1',
-    name: 'User',
-    email: 'user@example.com',
-    avatarUrl: 'https://via.placeholder.com/150',
-  );
-
-  @override
-  void initState() {
-    super.initState();
-  }
+  // User state
+  User _user = DummyData.currentUser;
+  bool _isInit = true;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_isLoading) {
-      _loadUserData();
+    if (_isInit) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args is Map<String, dynamic>) {
+        // Create new User object from arguments
+        _user = User(
+          id: 1, // Default ID 
+          username: args['username'] ?? _user.username,
+          email: args['email'] ?? _user.email,
+          avatarUrl: _user.avatarUrl,
+        );
+      }
+      _isInit = false;
     }
   }
 
-  Future<void> _loadUserData() async {
-    // 1. Try to get from arguments first (fastest)
-    final args = ModalRoute.of(context)?.settings.arguments;
-    String? name;
-    String? email;
-    if (args is String) {
-      name = args;
-      email = 'user@example.com'; // default
-    } else if (args is Map<String, dynamic>) {
-      name = args['username'];
-      email = args['email'];
-    }
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: _currentIndex);
+  }
 
-    // 2. Fallback to SharedPreferences
-    if (name == null || email == null) {
-      final prefs = await SharedPreferences.getInstance();
-      name ??= prefs.getString('username');
-      email ??= prefs.getString('email');
-    }
-
-    if (mounted) {
-      setState(() {
-        _user = User(
-          id: '1',
-          name: name ?? 'User',
-          email: email ?? 'user@example.com',
-          avatarUrl: 'https://via.placeholder.com/150',
-        );
-        _isLoading = false;
-      });
-    }
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   void _onTap(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+    // Smooth animate to page
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutQuad,
+    );
+  }
+
+  void _onPageChanged(int index) {
     setState(() {
       _currentIndex = index;
     });
@@ -78,21 +72,22 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
+    // Pages for the PageView
     final List<Widget> pages = [
-      DashboardScreen(username: _user.name, email: _user.email),
-      const CoursesScreen(),
+      DashboardScreen(
+        username: _user.username, // Correct property
+        email: _user.email,
+        // userAvatar: _user.avatarUrl, // If needed by Dashboard
+      ),
+      const CoursesScreen(), // Will need refactor to CourseListScreen
       const NotifikasiPage(),
     ];
 
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: _onPageChanged,
+        physics: const BouncingScrollPhysics(), // Smooth physics
         children: pages,
       ),
       bottomNavigationBar: LmsBottomNavBar(

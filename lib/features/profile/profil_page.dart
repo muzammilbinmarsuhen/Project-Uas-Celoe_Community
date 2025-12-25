@@ -130,7 +130,7 @@ class _ProfilPageState extends State<ProfilPage> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     // Data from User
-    final name = widget.user?.name ?? 'Guest';
+    final name = widget.user?.username ?? 'Guest';
     
     ImageProvider? avatarImage;
     if (_pickedFile != null) {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'app/routes.dart';
+import 'core/routes/routes.dart';
 import 'core/services/api_service.dart';
 
 void main() {
