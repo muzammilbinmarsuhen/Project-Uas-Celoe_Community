@@ -217,12 +217,12 @@ class _UploadFilePageState extends State<UploadFilePage> {
                   width: double.infinity,
                   child: ElevatedButton(
                      onPressed: _uploadedFiles.isEmpty ? null : () {
-                        Navigator.pop(context);
                         if (mounted) {
                            ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('File berhasil diupload!'), backgroundColor: Colors.green)
                            );
                         }
+                        Navigator.pop(context, _uploadedFiles);
                      },
                      style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFA82E2E), // Maroon

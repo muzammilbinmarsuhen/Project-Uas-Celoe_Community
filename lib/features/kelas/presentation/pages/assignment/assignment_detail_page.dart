@@ -1,8 +1,59 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:math';
 
-class AssignmentDetailPage extends StatelessWidget {
+class AssignmentDetailPage extends StatefulWidget {
   const AssignmentDetailPage({super.key});
+
+  @override
+  State<AssignmentDetailPage> createState() => _AssignmentDetailPageState();
+}
+
+class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
+  // Stats
+  List<PlatformFile> _files = [];
+  bool _isSubmitted = false;
+
+  void _navigateToUpload() async {
+    final result = await Navigator.pushNamed(context, '/upload-file');
+    if (result != null && result is List<PlatformFile>) {
+       setState(() {
+          _files = result;
+       });
+    }
+  }
+
+  void _submitAssignment() {
+     showDialog(
+        context: context, 
+        builder: (ctx) => AlertDialog(
+           title: Text("Serahkan Tugas?", style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+           content: Text("Aksi ini tidak dapat dibatalkan. Pastikan file sudah benar.", style: GoogleFonts.poppins()),
+           actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Batal")),
+              ElevatedButton(
+                 style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFA82E2E)),
+                 onPressed: () {
+                    Navigator.pop(ctx);
+                    setState(() => _isSubmitted = true);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                       const SnackBar(content: Text("Tugas berhasil diserahkan!"), backgroundColor: Colors.green)
+                    );
+                 }, 
+                 child: const Text("Serahkan", style: TextStyle(color: Colors.white))
+              )
+           ],
+        )
+     );
+  }
+
+  String _formatSize(int bytes) {
+    if (bytes <= 0) return "0 B";
+    const suffixes = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+    var i = (log(bytes) / log(1024)).floor();
+    return '${(bytes / pow(1024, i)).toStringAsFixed(1)} ${suffixes[i]}';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +76,6 @@ class AssignmentDetailPage extends StatelessWidget {
          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-               // Animated Card
                TweenAnimationBuilder<double>(
                   tween: Tween(begin: 0.0, end: 1.0),
                   duration: const Duration(milliseconds: 500),
@@ -56,33 +106,18 @@ class AssignmentDetailPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 20),
                         
-                        // Status Card
-                        Container(
-                           padding: const EdgeInsets.all(16),
-                           decoration: BoxDecoration(
-                              color: Colors.orange.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.orange.withValues(alpha: 0.3))
-                           ),
-                           child: Row(
-                              children: [
-                                 Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: const BoxDecoration(color: Colors.orange, shape: BoxShape.circle),
-                                    child: const Icon(Icons.hourglass_empty, color: Colors.white, size: 20),
-                                 ),
-                                 const SizedBox(width: 16),
-                                 Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                       Text('Status Pengumpulan', style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[700])),
-                                       Text('Belum Dikirim', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.orange[800])),
-                                    ],
-                                 )
-                              ],
-                           ),
-                        ),
+                        // Status Card (Dynamic)
+                        _buildStatusCard(),
+                        
                         const SizedBox(height: 24),
+
+                        // Main Logic Section (Description or File List)
+                        if (_files.isNotEmpty) ...[
+                           Text('File Tugas Anda', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600)),
+                           const SizedBox(height: 12),
+                           ..._files.map((file) => _buildFileItem(file)),
+                           const SizedBox(height: 24),
+                        ],
 
                         Text('Deskripsi Tugas', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600)),
                         const SizedBox(height: 8),
@@ -100,22 +135,8 @@ class AssignmentDetailPage extends StatelessWidget {
 
                         const SizedBox(height: 40),
                         
-                        SizedBox(
-                           width: double.infinity,
-                           child: ElevatedButton.icon(
-                              onPressed: () {
-                                 Navigator.pushNamed(context, '/upload-file');
-                              }, 
-                              icon: const Icon(Icons.upload_file, color: Colors.white),
-                              label: Text('Tambahkan Tugas', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
-                              style: ElevatedButton.styleFrom(
-                                 backgroundColor: const Color(0xFFA82E2E),
-                                 padding: const EdgeInsets.symmetric(vertical: 16),
-                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                 elevation: 4
-                              ),
-                           ),
-                        )
+                        // Action Button (Dynamic)
+                        _buildActionButton(),
                      ],
                   ),
                )
@@ -123,6 +144,156 @@ class AssignmentDetailPage extends StatelessWidget {
          ),
       ),
     );
+  }
+
+  Widget _buildStatusCard() {
+     Color bgColor;
+     Color iconBgColor;
+     Color textColor;
+     IconData icon;
+     String statusText;
+     String statusLabel = 'Status Pengumpulan';
+
+     if (_isSubmitted) {
+        bgColor = Colors.blue.withValues(alpha: 0.1);
+        iconBgColor = Colors.blue;
+        textColor = Colors.blue[800]!;
+        icon = Icons.check_circle_outline;
+        statusText = 'Sudah Dikumpulkan';
+     } else if (_files.isNotEmpty) {
+        bgColor = Colors.green.withValues(alpha: 0.1);
+        iconBgColor = Colors.green;
+        textColor = Colors.green[800]!;
+        icon = Icons.task_alt;
+        statusText = 'Siap Diserahkan';
+     } else {
+        bgColor = Colors.orange.withValues(alpha: 0.1);
+        iconBgColor = Colors.orange;
+        textColor = Colors.orange[800]!;
+        icon = Icons.hourglass_empty;
+        statusText = 'Belum Dikirim';
+     }
+
+     return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+           color: bgColor,
+           borderRadius: BorderRadius.circular(12),
+           border: Border.all(color: iconBgColor.withValues(alpha: 0.3))
+        ),
+        child: Row(
+           children: [
+              Container(
+                 padding: const EdgeInsets.all(8),
+                 decoration: BoxDecoration(color: iconBgColor, shape: BoxShape.circle),
+                 child: Icon(icon, color: Colors.white, size: 20),
+              ),
+              const SizedBox(width: 16),
+              Column(
+                 crossAxisAlignment: CrossAxisAlignment.start,
+                 children: [
+                    Text(statusLabel, style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[700])),
+                    Text(statusText, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: textColor)),
+                 ],
+              )
+           ],
+        ),
+     );
+  }
+
+  Widget _buildFileItem(PlatformFile file) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+         color: Colors.white,
+         borderRadius: BorderRadius.circular(12),
+         border: Border.all(color: Colors.grey[200]!),
+         boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 5, offset: const Offset(0, 2))
+         ]
+      ),
+      child: Row(
+         children: [
+            Container(
+               padding: const EdgeInsets.all(8),
+               decoration: BoxDecoration(color: Colors.red[50], shape: BoxShape.circle),
+               child: const Icon(Icons.picture_as_pdf, color: Colors.red, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+               child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                     Text(file.name, style: GoogleFonts.poppins(fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
+                     Text(_formatSize(file.size), style: GoogleFonts.poppins(fontSize: 11, color: Colors.grey)),
+                  ],
+               ),
+            ),
+            if (!_isSubmitted)
+            IconButton(
+               icon: const Icon(Icons.delete_outline, color: Colors.grey, size: 20),
+               onPressed: () {
+                  setState(() {
+                     _files.remove(file);
+                  });
+               },
+            )
+         ],
+      ),
+    );
+  }
+
+  Widget _buildActionButton() {
+     if (_isSubmitted) {
+        return SizedBox(
+           width: double.infinity,
+           child: OutlinedButton(
+              onPressed: () {
+                 // Logic to cancel submission
+                 setState(() => _isSubmitted = false);
+              },
+              style: OutlinedButton.styleFrom(
+                 padding: const EdgeInsets.symmetric(vertical: 16),
+                 side: const BorderSide(color: Color(0xFFA82E2E)),
+                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: Text('Batalkan Pengumpulan', style: GoogleFonts.poppins(color: const Color(0xFFA82E2E), fontWeight: FontWeight.bold)),
+           ),
+        );
+     }
+
+     if (_files.isNotEmpty) {
+        return SizedBox(
+           width: double.infinity,
+           child: ElevatedButton(
+              onPressed: _submitAssignment, // Action: Sumbit
+              style: ElevatedButton.styleFrom(
+                 backgroundColor: const Color(0xFF2E7D32), // Green for Submit
+                 padding: const EdgeInsets.symmetric(vertical: 16),
+                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                 elevation: 4
+              ),
+              child: Text('Serahkan', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+           ),
+        );
+     }
+
+     // Default: Tambahkan Tugas
+     return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+           onPressed: _navigateToUpload, 
+           icon: const Icon(Icons.upload_file, color: Colors.white),
+           label: Text('Tambahkan Tugas', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+           style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFA82E2E),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 4
+           ),
+        ),
+     );
   }
 
   Widget _buildBulletPoint(String text) {
