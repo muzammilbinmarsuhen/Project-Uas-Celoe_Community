@@ -2,24 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../core/data/dummy_data.dart';
-import '../../widgets/header_widget.dart';
-import '../../widgets/announcement_carousel_widget.dart';
-import '../../widgets/course_progress_card_widget.dart';
+import '../../core/data/dummy_data.dart';
+import 'widgets/header_widget.dart'; // Wait, widgets are in features/home/widgets? Yes.
+import 'widgets/announcement_carousel_widget.dart';
+import 'widgets/course_progress_card_widget.dart';
 
-import '../../../../features/pengaduan/presentation/pages/pengaduan_page.dart';
-import '../../../../features/profile/presentation/pages/profile_page.dart';
+import '../pengaduan/presentation/pages/pengaduan_page.dart';
+import '../profile/profile_page.dart';
 
-class HomePage extends ConsumerStatefulWidget {
+class DashboardContentPage extends ConsumerStatefulWidget {
   final Map<String, dynamic> userData;
 
-  const HomePage({super.key, required this.userData});
+  const DashboardContentPage({super.key, required this.userData});
 
   @override
-  ConsumerState<HomePage> createState() => _HomePageState();
+  ConsumerState<DashboardContentPage> createState() => _DashboardContentPageState();
 }
 
-class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderStateMixin {
+class _DashboardContentPageState extends ConsumerState<DashboardContentPage> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
 
@@ -62,7 +62,7 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
                   onProfileTap: () {
                      Navigator.push(
                         context, 
-                        MaterialPageRoute(builder: (context) => ProfilePage(userData: widget.userData)),
+                        MaterialPageRoute(builder: (context) => const ProfilePage()),
                      );
                   },
                 ),

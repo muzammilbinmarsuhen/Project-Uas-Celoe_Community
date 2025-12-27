@@ -2,9 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../core/routes/routes.dart';
+import '../../routes/app_routes.dart';
 import '../../core/widgets/custom_text_field.dart';
-import 'presentation/controllers/auth_controller.dart';
+import 'auth_controller.dart';
 import 'widgets/auth_background_widgets.dart';
 import 'widgets/liquid_button.dart';
 

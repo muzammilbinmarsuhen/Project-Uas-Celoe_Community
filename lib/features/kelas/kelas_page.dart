@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../core/data/dummy_data.dart';
-import '../../../../core/theme/app_theme.dart';
-import '../controllers/kelas_controller.dart';
-import '../../../profile/profile_controller.dart';
-import 'package:celoe_community/features/kelas_saya/widgets/kelas_card.dart';
 
-class KelasSayaPage extends ConsumerWidget {
-  const KelasSayaPage({super.key});
+import '../../../../core/theme/app_theme.dart';
+import 'kelas_controller.dart';
+import '../profile/profile_controller.dart';
+import 'widgets/kelas_card.dart';
+
+class KelasPage extends ConsumerWidget {
+  const KelasPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

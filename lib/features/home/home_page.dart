@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_theme.dart';
-import '../../../../features/kelas_saya/presentation/pages/kelas_saya_page.dart';
-import '../../../../features/notifications/notifications_page.dart';
-import 'home_page.dart';
+import '../../core/theme/app_theme.dart';
+import '../kelas/kelas_page.dart';
+import '../notification/notification_page.dart';
+import 'dashboard_content_page.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../controllers/dashboard_controller.dart';
+import 'dashboard_controller.dart'; 
 
-class DashboardPage extends ConsumerStatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   final Map<String, dynamic>? args;
-  const DashboardPage({super.key, this.args});
+  const HomePage({super.key, this.args});
 
   @override
-  ConsumerState<DashboardPage> createState() => _DashboardPageState();
+  ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _DashboardPageState extends ConsumerState<DashboardPage> {
+class _HomePageState extends ConsumerState<HomePage> {
   late final List<Widget> _pages;
 
   @override
@@ -23,8 +23,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     super.initState();
     final userData = widget.args ?? {'username': 'Guest', 'email': 'guest@example.com'};
     _pages = [
-      HomePage(userData: userData),
-      const KelasSayaPage(),
+      DashboardContentPage(userData: userData),
+      const KelasPage(),
       const NotifikasiPage(),
     ];
   }

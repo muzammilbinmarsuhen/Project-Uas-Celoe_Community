@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
-import 'core/theme/app_theme.dart';
-import 'core/routes/routes.dart';
-import 'core/services/api_service.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:provider/provider.dart';
+import 'app.dart';
+import 'core/services/api_service.dart';
 
 void main() {
   runApp(
@@ -14,24 +11,9 @@ void main() {
         providers: [
           ChangeNotifierProvider(create: (_) => ApiService()),
         ],
-        child: MyApp(),
+        child: const App(),
       ),
     ),
   );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'CeLOE Community',
-      theme: AppTheme.lightTheme,
-      initialRoute: AppRoutes.splash,
-      routes: AppRoutes.getRoutes(),
-    );
-  }
-}
