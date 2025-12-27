@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/data/dummy_data.dart'; // Dummy Data
-import '../courses/assignment_detail_screen.dart'; // Renamed
+
 
 class NotifikasiPage extends StatefulWidget {
   const NotifikasiPage({super.key});
@@ -131,13 +131,8 @@ class _NotificationCard extends StatelessWidget {
           onTap: () {
              // Mock Navigation based on title string (Simple logic for now)
              if (title.contains('Redesign')) {
-                 Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AssignmentDetailScreen(
-                      assignmentId: 203, 
-                      title: 'Tugas 2: Redesign Halaman Login', 
-                      deadline: 'Lihat Detail',
-                    )),
+                  ScaffoldMessenger.of(context).showSnackBar(
+                   const SnackBar(content: Text('Detail tugas akan segera hadir')),
                  );
              } else {
                  ScaffoldMessenger.of(context).showSnackBar(

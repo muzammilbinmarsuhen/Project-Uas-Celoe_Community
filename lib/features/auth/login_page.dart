@@ -1,449 +1,92 @@
-import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../../core/routes/routes.dart'; // Unified Routes
-import 'login_help_sheet.dart';
+import '../../core/routes/routes.dart';
+import '../../core/widgets/custom_text_field.dart';
+import 'presentation/controllers/auth_controller.dart';
+import 'widgets/auth_background_widgets.dart';
+import 'widgets/liquid_button.dart';
 
-class EllipticalClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    Path path = Path();
-    path.addOval(Rect.fromCenter(
-      center: Offset(size.width / 2, size.height * 0.15),
-      width: size.width * 1.8,
-      height: size.height * 1.7,
-    ));
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
-}
-
-class WaveClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    Path path = Path();
-    path.moveTo(0, size.height * 0.4);
-    path.quadraticBezierTo(size.width * 0.25, size.height * 0.2, size.width * 0.5, size.height * 0.4);
-    path.quadraticBezierTo(size.width * 0.75, size.height * 0.6, size.width, size.height * 0.4);
-    path.lineTo(size.width, size.height);
-    path.lineTo(0, size.height);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
-}
-
-class FloatingParticlesPainter extends CustomPainter {
-  final double animationValue;
-
-  FloatingParticlesPainter(this.animationValue);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white.withValues(alpha: 0.1);
-
-    for (int i = 0; i < 20; i++) {
-      final x = (size.width / 20) * i + (animationValue * 10 * (i % 2 == 0 ? 1 : -1));
-      final y = (size.height / 20) * (i % 20) + (animationValue * 5);
-      canvas.drawCircle(Offset(x % size.width, y % size.height), 2, paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(FloatingParticlesPainter oldDelegate) =>
-      oldDelegate.animationValue != animationValue;
-}
-
-class LiquidFillButton extends StatefulWidget {
-  final VoidCallback onPressed;
-  final Widget child;
-  final Color fillColor;
-  final Duration duration;
-
-  const LiquidFillButton({
-    super.key,
-    required this.onPressed,
-    required this.child,
-    this.fillColor = const Color(0xFFA82E2E),
-    this.duration = const Duration(milliseconds: 1500), // Slower for effect
-  });
-
-  @override
-  State<LiquidFillButton> createState() => _LiquidFillButtonState();
-}
-
-class _LiquidFillButtonState extends State<LiquidFillButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: widget.duration,
-      vsync: this,
-    );
-    _animation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _handlePress() {
-    _controller.forward(from: 0.0);
-    // Delay actual action slightly to show fill effect
-    Future.delayed(const Duration(milliseconds: 600), () {
-        widget.onPressed();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _handlePress,
-      child: AnimatedBuilder(
-        animation: _animation,
-        builder: (context, child) {
-          return Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(50),
-              // Base Gradient (Darker Red)
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  widget.fillColor,
-                  Color.lerp(widget.fillColor, Colors.black, 0.2)!,
-                ],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: widget.fillColor.withValues(alpha: 0.4),
-                  blurRadius: 15,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // 1. Progress Fill (Background Rect)
-                Positioned.fill(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Container(
-                        width: MediaQuery.of(context).size.width * _animation.value,
-                        color: Colors.white.withValues(alpha: 0.2), // Base fill
-                      ),
-                    ),
-                  ),
-                ),
-                // 2. Wave Effect
-                Positioned.fill(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
-                    child: CustomPaint(
-                      painter: LiquidWavePainter(
-                        _animation.value, 
-                        offset: _animation.value * 100, // Dynamic ripple
-                        color: Colors.white.withValues(alpha: 0.3)
-                      ),
-                    ),
-                  ),
-                ),
-                // 3. Second Wave (Slightly behind, diff speed)
-                 Positioned.fill(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
-                    child: CustomPaint(
-                      painter: LiquidWavePainter(
-                        _animation.value * 0.85, 
-                        offset: _animation.value * 150 + 50, 
-                        color: Colors.white.withValues(alpha: 0.15)
-                      ),
-                    ),
-                  ),
-                ),
-                widget.child,
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class LiquidWavePainter extends CustomPainter {
-  final double progress;
-  final double offset;
-  final Color color;
-
-  LiquidWavePainter(this.progress, {this.offset = 0, required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (progress == 0) return;
-
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-
-    final path = Path();
-
-
-    // Start slightly left to hide edge
-    path.moveTo(0, size.height);
-    
-
-    
-    // Simpler approach for "Filling": Use a standard rect but with a wavy right edge.
-    path.reset();
-    path.moveTo(0, 0); // Top Left
-    
-    // Draw wavy line to bottom
-    const step = 2.0; // Smoother
-    final rightEdgeX = size.width * progress;
-    
-    for (double y = 0; y <= size.height; y += step) {
-       // "180%" feeling: Larger amplitude, smoother curves
-       // Amp: 25, Freq Divisor: 40
-       final x = rightEdgeX + sin((y + offset) / 40) * 25 * (1.1 - progress); 
-       path.lineTo(x, y);
-    }
-
-    path.lineTo(0, size.height); // Bottom Left
-    path.close();
-
-    path.lineTo(0, 0); // Top Left
-    
-    // Wavy Right Edge
-    for(double y = 0; y <= size.height; y+= 2) {
-       // x varies based on y
-       final wave = sin((y + offset * 10) / 15) * 8; // Amplitude 8
-       path.lineTo((size.width * progress) + wave, y);
-    }
-    
-    path.lineTo(size.width * progress, size.height);
-    path.close();
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(LiquidWavePainter oldDelegate) =>
-      oldDelegate.progress != progress || oldDelegate.offset != offset;
-}
-
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
-  // Controllers
+class _LoginPageState extends ConsumerState<LoginPage> with SingleTickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _usernameController = TextEditingController();
-  
-  // State
   bool _obscurePassword = true;
-  bool _isLogin = true; 
-  bool _isSplash = true; // NEW: Starts in Splash mode
   
-
-
-  // Animations
-  late AnimationController _mainController; // Controls background particles
+  // Animation for background
+  late AnimationController _bgController;
   late Animation<double> _particleAnimation;
-
-  late AnimationController _formController; // Controls Form appearance
-  late Animation<double> _formFadeAnimation;
-  late Animation<double> _formSlideAnimation;
-
-  late AnimationController _logoPulseController; // Controls Logo Pulse on Splash
-  late Animation<double> _logoScaleAnimation;
 
   @override
   void initState() {
     super.initState();
-    _checkLoginStatus(); // Check if already logged in
-    
-    // 1. Background Particles (Continuous)
-    _mainController = AnimationController(
+    _bgController = AnimationController(
       duration: const Duration(seconds: 10),
       vsync: this,
     )..repeat();
     _particleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _mainController, curve: Curves.linear),
-    );
-
-    // 2. Logo Pulse (While in Splash)
-    _logoPulseController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    )..repeat(reverse: true);
-    _logoScaleAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
-      CurvedAnimation(parent: _logoPulseController, curve: Curves.easeInOut),
-    );
-
-    // 3. Form Intro (Triggered on Click)
-    _formController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-    _formFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _formController, curve: const Interval(0.4, 1.0, curve: Curves.easeOut)),
-    );
-    _formSlideAnimation = Tween<double>(begin: 100.0, end: 0.0).animate(
-      CurvedAnimation(parent: _formController, curve: const Interval(0.4, 1.0, curve: Curves.easeOutCubic)),
+      CurvedAnimation(parent: _bgController, curve: Curves.linear)
     );
   }
 
   @override
   void dispose() {
-    _mainController.dispose();
-    _formController.dispose();
-    _logoPulseController.dispose();
-    _usernameController.dispose();
+    _bgController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  void _onSplashTap() {
-    setState(() {
-      _isSplash = false;
-    });
-    _logoPulseController.stop(); // Stop pulsing
-    _formController.forward(); // Start showing form
-  }
-
-  void _showMessage(String message, {bool isError = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError ? Colors.red : Colors.green,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
-  Future<void> _checkLoginStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-    
-    if (isLoggedIn && mounted) {
-      final username = prefs.getString('username') ?? 'Mahasiswa';
-      // Auto-navigate to Home
-      Navigator.pushReplacementNamed(
-        context, 
-        AppRoutes.home,
-        arguments: {'username': username, 'email': prefs.getString('email') ?? 'student@celoe.com'},
-      );
-    }
-  }
-
-  Future<void> _handleAuth() async {
+  Future<void> _handleLogin() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
-    final username = _usernameController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      _showMessage('Email dan Password wajib diisi', isError: true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Email dan Password wajib diisi'), backgroundColor: Colors.red),
+      );
       return;
     }
 
-    final prefs = await SharedPreferences.getInstance();
-
-    if (!_isLogin) {
-      // REGISTER
-      if (username.isEmpty) {
-        _showMessage('Username wajib diisi', isError: true);
-        return;
-      }
-      
-      // Simple Overwrite Registration (Single User for Demo)
-      await prefs.setString('email', email);
-      await prefs.setString('password', password);
-      await prefs.setString('username', username);
-      await prefs.setBool('isLoggedIn', true); // Auto Login
-
-      _showMessage('Registrasi berhasil! Selamat datang $username');
-      
-      if (mounted) {
-         Navigator.pushReplacementNamed(
-            context, 
-            AppRoutes.home,
-            arguments: {'username': username, 'email': email},
-         );
-      }
-
-    } else {
-      // LOGIN
-      final savedEmail = prefs.getString('email');
-      final savedPassword = prefs.getString('password');
-      final savedUsername = prefs.getString('username');
-
-      if (savedEmail != email) {
-        _showMessage('Email tidak terdaftar/salah.', isError: true);
-        return;
-      }
-      
-      if (savedPassword != password) {
-        _showMessage('Password salah!', isError: true);
-        return;
-      }
-
-      await prefs.setBool('isLoggedIn', true);
-      _showMessage('Login Berhasil! Selamat datang $savedUsername');
-      
-      if (mounted) {
-        Navigator.pushReplacementNamed(
-          context, 
-          AppRoutes.home,
-          arguments: {'username': savedUsername, 'email': savedEmail},
-        );
-      }
-    }
-  }
-
-  void _toggleMode() {
-    setState(() {
-      _isLogin = !_isLogin;
-      // Re-trigger form animation slightly for effect
-      _formController.value = 0.4;
-      _formController.forward();
-    });
+    // Call AuthController
+    await ref.read(authControllerProvider.notifier).login(email, password);
   }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     
+    // Listen to Auth State
+    ref.listen<AsyncValue<void>>(authControllerProvider, (previous, next) {
+      next.when(
+        data: (_) {
+          // Success: Navigate to Home
+          Navigator.pushReplacementNamed(context, AppRoutes.home);
+        },
+        error: (error, stack) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(error.toString().replaceAll('Exception: ', '')), backgroundColor: Colors.red),
+          );
+        },
+        loading: () {},
+      );
+    });
+
+    final authState = ref.watch(authControllerProvider);
+    final isLoading = authState.isLoading;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // 1. Static/Animated Background
+          // 1. Background Particles
           Positioned.fill(
             child: AnimatedBuilder(
               animation: _particleAnimation,
@@ -455,268 +98,154 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             ),
           ),
           
-          // 2. Main Layout (Splash -> Form)
-          Stack(
-            children: [
-              // HEADER IMAGE (Always visible, but changes size/clipper)
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 800),
-                curve: Curves.easeInOutCubic,
-                top: 0,
-                left: 0,
-                right: 0,
-                height: _isSplash ? size.height : size.height * 0.35,
-                child: ClipPath(
-                  clipper: _isSplash ? null : EllipticalClipper(),
-                  child: Stack(
-                    children: [
+          // 2. Header
+          Positioned(
+             top: 0, left: 0, right: 0,
+             height: size.height * 0.4, // 40% height for header
+             child: ClipPath(
+                clipper: EllipticalClipper(),
+                child: Stack(
+                   children: [
                       Image.asset(
-                        'assets/images/uim.jpg',
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: double.infinity,
+                         'assets/images/uim.jpg',
+                         fit: BoxFit.cover,
+                         width: double.infinity,
+                         height: double.infinity,
+                         errorBuilder: (_,__,___) => Container(color: const Color(0xFFA82E2E)),
                       ),
-                      Container(
-                         color: Colors.black.withValues(alpha: _isSplash ? 0.6 : 0.3),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // SPLASH CONTENT (Centered Logo)
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 800),
-                curve: Curves.easeInOutCubic,
-                top: _isSplash ? (size.height / 2) - 80 : 60, // Move to header position
-                left: 0, 
-                right: 0,
-                child: GestureDetector(
-                  onTap: _isSplash ? _onSplashTap : null,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ScaleTransition(
-                        scale: _isSplash ? _logoScaleAnimation : const AlwaysStoppedAnimation(1.0),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 800),
-                          width: _isSplash ? 160 : 80,
-                          height: _isSplash ? 160 : 80,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: const Color(0xFFA82E2E), // Primary Red
-                            border: Border.all(color: Colors.white, width: _isSplash ? 6 : 3),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFFA82E2E).withValues(alpha: 0.5),
-                                blurRadius: _isSplash ? 50 : 20,
-                                spreadRadius: _isSplash ? 10 : 2,
-                              )
+                      Container(color: const Color(0xFFA82E2E).withValues(alpha: 0.7)), // Overlay
+                      Center(
+                         child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                               Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                     shape: BoxShape.circle,
+                                     border: Border.all(color: Colors.white, width: 2),
+                                  ),
+                                  child: const Icon(Icons.school, color: Colors.white, size: 50),
+                               ),
+                               const SizedBox(height: 12),
+                               Text(
+                                  'CeLOE Community',
+                                  style: GoogleFonts.poppins(
+                                     fontSize: 24,
+                                     fontWeight: FontWeight.bold,
+                                     color: Colors.white,
+                                  ),
+                               ),
                             ],
-                          ),
-                          child: Icon(
-                            Icons.school_rounded, // Changed Icon for "University/Education" feel
-                            size: _isSplash ? 80 : 40,
-                            color: Colors.white,
-                          ),
-                        ),
+                         ),
                       ),
-                      if (_isSplash) ...[
-                        const SizedBox(height: 30),
-                        Text(
-                          "CeLOE Community",
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.5,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          "Tap to Connect",
-                          style: GoogleFonts.poppins(
-                            color: Colors.white70,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ]
-                    ],
-                  ),
+                   ],
                 ),
-              ),
+             ),
+          ),
 
-              // FORM CONTENT (Slides In)
-              if (!_isSplash)
-                Positioned.fill(
-                  top: size.height * 0.35, // Below the header
-                  child: AnimatedBuilder(
-                    animation: _formController,
-                    builder: (context, child) {
-                      return Opacity(
-                        opacity: _formFadeAnimation.value,
-                        child: Transform.translate(
-                          offset: Offset(0, _formSlideAnimation.value),
-                          child: child,
-                        ),
-                      );
-                    },
-                    // The Actual Scrollable Form
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          // 3. Login Form
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min, // Wrap content
+                children: [
+                   SizedBox(height: size.height * 0.35), // Spacer to push form down
+                   
+                   Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                         color: Colors.white,
+                         borderRadius: BorderRadius.circular(24),
+                         boxShadow: [
+                            BoxShadow(
+                               color: Colors.black.withValues(alpha: 0.1),
+                               blurRadius: 20,
+                               offset: const Offset(0, 5),
+                            )
+                         ],
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                           Text(
-                            _isLogin ? 'Selamat Datang' : 'Bergabunglah',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.poppins(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFFA82E2E),
-                            ),
-                          ),
                           Text(
-                            _isLogin ? 'Login untuk melanjutkan belajar' : 'Buat akun komunitas baru',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
+                             'Selamat Datang',
+                             textAlign: TextAlign.center,
+                             style: GoogleFonts.poppins(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFFA82E2E),
+                             ),
                           ),
-                          const SizedBox(height: 40),
-
-                          Container(
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Colors.black12,
-                                  blurRadius: 20,
-                                  offset: Offset(0, 10),
-                                )
-                              ],
-                            ),
-                            child: Column(
-                              children: [
-                                if (!_isLogin) ...[
-                                  TextFormField(
-                                    controller: _usernameController,
-                                    decoration: InputDecoration(
-                                      prefixIcon: const Icon(Icons.person, color: Color(0xFFA82E2E)),
-                                      labelText: 'Username',
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                ],
-                                TextFormField(
-                                  controller: _emailController,
-                                  decoration: InputDecoration(
-                                    prefixIcon: const Icon(Icons.email, color: Color(0xFFA82E2E)),
-                                    labelText: 'Email',
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                TextFormField(
-                                  controller: _passwordController,
-                                  obscureText: _obscurePassword,
-                                  decoration: InputDecoration(
-                                    prefixIcon: const Icon(Icons.lock, color: Color(0xFFA82E2E)),
-                                    suffixIcon: IconButton(
-                                      icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                                    ),
-                                    labelText: 'Password',
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                                  ),
-                                ),
-                                const SizedBox(height: 30),
-                                
-                                // Buttons
-                                SizedBox(
-                                  width: double.infinity,
-                                  height: 55,
-                                  child: LiquidFillButton(
-                                    onPressed: _handleAuth,
-                                    child: Text(
-                                      _isLogin ? 'MASUK' : 'DAFTAR',
-                                      style: GoogleFonts.poppins(
-                                        color: Colors.white,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 1.2,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                          const SizedBox(height: 24),
                           
-                          const SizedBox(height: 20),
-                          if (_isLogin)
-                            TextButton(
-                               onPressed: () {
-                                 // Help sheet
-                                 showModalBottomSheet(
-                                    context: context,
-                                    isScrollControlled: true,
-                                    backgroundColor: Colors.transparent,
-                                    builder: (_) => DraggableScrollableSheet(
-                                      initialChildSize: 0.7,
-                                      minChildSize: 0.5,
-                                      maxChildSize: 0.95,
-                                      builder: (_, c) => LoginHelpSheet(scrollController: c),
-                                    ),
-                                  );
-                               },
-                               child: Text("Butuh Bantuan?", style: GoogleFonts.poppins(color: Colors.grey)),
-                            ),
-
-                          const SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(_isLogin ? "Belum punya akun? " : "Sudah punya akun? "),
-                              GestureDetector(
-                                onTap: _toggleMode,
-                                child: Text(
-                                  _isLogin ? "Daftar" : "Login",
-                                  style: GoogleFonts.poppins(
-                                    color: const Color(0xFFA82E2E),
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
+                          CustomTextField(
+                            label: 'Email',
+                            hint: 'Masukkan email',
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            suffixIcon: const Icon(Icons.email_outlined),
                           ),
-                          const SizedBox(height: 50), // Bottom padding
+                          const SizedBox(height: 16),
+                          CustomTextField(
+                            label: 'Password',
+                            hint: 'Masukkan password',
+                            controller: _passwordController,
+                            isPassword: _obscurePassword,
+                            suffixIcon: IconButton(
+                               icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                               onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                            ),
+                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                               onPressed: () => Navigator.pushNamed(context, '/forgot-password'),
+                               child: Text('Lupa Password?', style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey)),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          
+                          SizedBox(
+                             height: 55,
+                             width: double.infinity,
+                             child: isLoading 
+                               ? const Center(child: CircularProgressIndicator())
+                               : LiquidFillButton(
+                                onPressed: _handleLogin,
+                                child: Text('MASUK', style: GoogleFonts.poppins(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
+                             ),
+                          ),
                         ],
                       ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
+                   ),
 
-          // Bottom Curve Decor (Only visible in Splash or transitioning)
-          if (_isSplash)
-            Positioned(
-              bottom: 0, left: 0, right: 0,
-              child: ClipPath(
-                clipper: WaveClipper(),
-                child: Container(
-                  height: 100,
-                  color: const Color(0xFFA82E2E).withValues(alpha: 0.5),
-                ),
+                   const SizedBox(height: 24),
+                   Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                         const Text('Belum punya akun? '),
+                         GestureDetector(
+                            onTap: () => Navigator.pushNamed(context, '/register'),
+                            child: Text(
+                               'Daftar Sekarang',
+                               style: GoogleFonts.poppins(
+                                  color: const Color(0xFFA82E2E),
+                                  fontWeight: FontWeight.bold,
+                               ),
+                            ),
+                         ),
+                      ],
+                   ),
+                   const SizedBox(height: 20),
+                ],
               ),
             ),
+          ),
         ],
       ),
     );
   }
 }
+

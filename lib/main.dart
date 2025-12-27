@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import 'core/theme/app_theme.dart';
 import 'core/routes/routes.dart';
 import 'core/services/api_service.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 void main() {
   runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => ApiService()),
-      ],
-      child: const MyApp(),
+    ProviderScope(
+      child: MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => ApiService()),
+        ],
+        child: MyApp(),
+      ),
     ),
   );
 }
@@ -24,32 +29,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'CeLOE Community',
-      theme: ThemeData(
-        primaryColor: const Color(0xFFB22222),
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFB22222)),
-        scaffoldBackgroundColor: Colors.white,
-        fontFamily: GoogleFonts.poppins().fontFamily,
-        cardTheme: const CardThemeData(
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(12)),
-          ),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFB22222),
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      ),
+      theme: AppTheme.lightTheme,
       initialRoute: AppRoutes.splash,
       routes: AppRoutes.getRoutes(),
     );

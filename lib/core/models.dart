@@ -1,21 +1,68 @@
 
-class User {
+class UserModel {
   final int id;
   final String username;
   final String email;
   final String? avatarUrl;
+  final String? firstName;
+  final String? lastName;
+  final String? country;
+  final String? description;
+  final String? faculty;
+  final String? studyProgram;
+  final DateTime? firstAccess;
+  final DateTime? lastAccess;
 
-  User({required this.id, required this.username, required this.email, this.avatarUrl});
+  UserModel({
+    required this.id,
+    required this.username,
+    required this.email,
+    this.avatarUrl,
+    this.firstName,
+    this.lastName,
+    this.country,
+    this.description,
+    this.faculty,
+    this.studyProgram,
+    this.firstAccess,
+    this.lastAccess,
+  });
 
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      id: json['id'],
-      username: json['username'],
-      email: json['email'],
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    return UserModel(
+      id: json['id'] ?? 0,
+      username: json['username'] ?? '',
+      email: json['email'] ?? '',
       avatarUrl: json['avatar_url'],
+      firstName: json['first_name'],
+      lastName: json['last_name'],
+      country: json['country'],
+      description: json['description'],
+      faculty: json['faculty'],
+      studyProgram: json['study_program'],
+      firstAccess: json['first_access'] != null ? DateTime.parse(json['first_access']) : null,
+      lastAccess: json['last_access'] != null ? DateTime.parse(json['last_access']) : null,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'username': username,
+      'email': email,
+      'avatar_url': avatarUrl,
+      'first_name': firstName,
+      'last_name': lastName,
+      'country': country,
+      'description': description,
+      'faculty': faculty,
+      'study_program': studyProgram,
+      'first_access': firstAccess?.toIso8601String(),
+      'last_access': lastAccess?.toIso8601String(),
+    };
+  }
 }
+
 
 class Attachment {
   final int id;
@@ -150,10 +197,10 @@ class NotificationItem {
   final String? relatedType; // 'quiz', 'assignment', 'material'
 
   NotificationItem({
-    required this.title, 
-    required this.message, 
-    required this.link, 
-    required this.isRead, 
+    required this.title,
+    required this.message,
+    required this.link,
+    required this.isRead,
     required this.createdAt,
     this.relatedId,
     this.relatedType,
@@ -166,8 +213,44 @@ class NotificationItem {
       link: json['link'] ?? '',
       isRead: json['is_read'],
       createdAt: json['created_at'],
-      relatedId: json['related_id'], 
+      relatedId: json['related_id'],
       relatedType: json['related_type'],
     );
+  }
+}
+
+class ClassModel {
+  final String id;
+  final String namaKelas;
+  final String kodeKelas;
+  final String dosen;
+  final DateTime tanggalMulai;
+
+  ClassModel({
+    required this.id,
+    required this.namaKelas,
+    required this.kodeKelas,
+    required this.dosen,
+    required this.tanggalMulai,
+  });
+
+  factory ClassModel.fromJson(Map<String, dynamic> json) {
+    return ClassModel(
+      id: json['id'],
+      namaKelas: json['namaKelas'],
+      kodeKelas: json['kodeKelas'],
+      dosen: json['dosen'],
+      tanggalMulai: DateTime.parse(json['tanggalMulai']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'namaKelas': namaKelas,
+      'kodeKelas': kodeKelas,
+      'dosen': dosen,
+      'tanggalMulai': tanggalMulai.toIso8601String(),
+    };
   }
 }

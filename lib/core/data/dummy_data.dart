@@ -1,11 +1,19 @@
 import '../models.dart';
 
 class DummyData {
-  static final User currentUser = User(
+  static final UserModel currentUser = UserModel(
     id: 1,
     username: 'Mahasiswa Celoe',
     email: 'mahasiswa@telkomuniversity.ac.id',
     avatarUrl: 'https://i.pravatar.cc/150?u=u001',
+    firstName: 'Mahasiswa',
+    lastName: 'Celoe',
+    country: 'Indonesia',
+    description: 'Mahasiswa aktif Telkom University yang semangat belajar.',
+    faculty: 'Fakultas Ilmu Terapan',
+    studyProgram: 'D3 Sistem Informasi',
+    firstAccess: DateTime(2023, 9, 1, 8, 0),
+    lastAccess: DateTime.now(),
   );
 
   static final List<Course> courses = [
@@ -36,6 +44,34 @@ class DummyData {
       semester: 'Semester 2',
       thumbnail: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=800&q=80',
       progress: 100,
+    ),
+    Course(
+      id: 5,
+      title: 'Algoritma Pemrograman',
+      semester: 'Semester 1',
+      thumbnail: 'https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=800&q=80',
+      progress: 75,
+    ),
+    Course(
+       id: 6,
+       title: 'Basis Data',
+       semester: 'Semester 3',
+       thumbnail: 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?auto=format&fit=crop&w=800&q=80',
+       progress: 30,
+    ),
+    Course(
+       id: 7,
+       title: 'Kecerdasan Buatan',
+       semester: 'Semester 5',
+       thumbnail: 'https://images.unsplash.com/photo-1555255707-c07966088b7b?auto=format&fit=crop&w=800&q=80',
+       progress: 60,
+    ),
+    Course(
+       id: 8,
+       title: 'Internet of Things (IoT)',
+       semester: 'Semester 6',
+       thumbnail: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80',
+       progress: 10,
     ),
   ];
 
@@ -120,5 +156,29 @@ class DummyData {
       'date': '3 Hari yang lalu',
       'isRead': true,
     },
+  ];
+
+  static final List<ClassModel> classes = [
+    ClassModel(
+      id: '1',
+      namaKelas: 'Desain Antarmuka & Pengalaman Pengguna',
+      kodeKelas: 'UIUX-101',
+      dosen: 'Ady Purnomo',
+      tanggalMulai: DateTime(2023, 9, 1),
+    ),
+    ClassModel(
+      id: '2',
+      namaKelas: 'Pemrograman Perangkat Bergerak',
+      kodeKelas: 'MOBILE-201',
+      dosen: 'Budi Santoso',
+      tanggalMulai: DateTime(2023, 9, 1),
+    ),
+    ClassModel(
+      id: '3',
+      namaKelas: 'Sistem Operasi',
+      kodeKelas: 'SO-301',
+      dosen: 'Cici Lestari',
+      tanggalMulai: DateTime(2023, 9, 1),
+    ),
   ];
 }

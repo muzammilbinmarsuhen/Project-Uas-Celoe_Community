@@ -2,28 +2,9 @@ import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/routes/routes.dart';
-
-class FloatingParticlesPainter extends CustomPainter {
-  final double animationValue;
-
-  FloatingParticlesPainter(this.animationValue);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white.withValues(alpha: 0.1);
-
-    for (int i = 0; i < 20; i++) {
-      final x = (size.width / 20) * i + (animationValue * 10 * (i % 2 == 0 ? 1 : -1));
-      final y = (size.height / 20) * (i % 20) + (animationValue * 5);
-      canvas.drawCircle(Offset(x % size.width, y % size.height), 2, paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(FloatingParticlesPainter oldDelegate) =>
-      oldDelegate.animationValue != animationValue;
-}
+import '../auth/widgets/auth_background_widgets.dart'; // Import Shared Widgets
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -67,18 +48,33 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
       ),
     );
 
-    _controller.forward();
-    _controller.repeat(period: const Duration(seconds: 10)); // Slow particle loop for background
+    _controller.forward(); 
+    // We don't repeat here to keep transition simple.
 
-    // Navigate logic - separate timer or listener to not be affected by repeat
-    // Using a one-off timer since the controller is now repeating for particles
-    Timer(const Duration(seconds: 4), () {
-      if (mounted) {
-        // Stop animation before navigating to prevent leaks/issues
-        _controller.stop(); 
-        Navigator.of(context).pushReplacementNamed(AppRoutes.login);
-      }
-    });
+    _checkLoginAndNavigate();
+  }
+
+  Future<void> _checkLoginAndNavigate() async {
+    // Artificial Delay for Splash Effect
+    await Future.delayed(const Duration(seconds: 3));
+
+    if (!mounted) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+    if (isLoggedIn) {
+       final username = prefs.getString('username') ?? 'Mahasiswa';
+       final email = prefs.getString('email') ?? 'student@celoe.com';
+       Navigator.pushReplacementNamed(
+          context, 
+          AppRoutes.home,
+          arguments: {'username': username, 'email': email},
+       );
+    } else {
+       Navigator.pushReplacementNamed(context, AppRoutes.login);
+    }
   }
 
   @override
@@ -87,12 +83,9 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     super.dispose();
   }
 
+
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final logoSize = screenWidth * 0.4;
-    final textSize = screenWidth * 0.04;
-
     return Scaffold(
       body: Stack(
         children: [
@@ -106,8 +99,8 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                 end: Alignment.bottomCenter,
                 colors: [
                   Color(0xFFB74A4A),
-                  Color(0xFFA82E2E), // Slightly darker match
-                  Color(0xFF7F1D1D), // Dark red for depth
+                  Color(0xFFA82E2E), 
+                  Color(0xFF7F1D1D), 
                 ],
               ),
             ),
@@ -124,7 +117,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
             },
           ),
 
-          // Glassmorphism Overlay (Subtle)
+          // Glassmorphism Overlay
           BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
             child: Container(
@@ -132,79 +125,114 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
             ),
           ),
 
-          // Content
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                AnimatedBuilder(
-                  animation: _controller,
-                  builder: (context, child) {
-                    // Start fade/scale are driven by [0,1] mainly in first second.
-                    // Since controller repeats, we clamp values or use specific controller.
-                    // Optimally we'd use separate controllers, but for simplicity let's just Clamp
-                    // Or actually, simply use the _fadeAnimation value which depends on controller value [0..1]
-                    // But controller goes 0..1 repeatedly.
-                    // Let's FIX this: We want particles to loop, but entrance to play once.
-                    // Solution: Use Clamped animation or separate status check.
-                    
-                    // Simple fix attempt: Just let it breathe (pulse) slightly after entrance?
-                    // Or better: Use Interval 0.0-0.2 (of 10s) = 2s entrance. 
-                    // Let's refine the animation setup in initState, but to be safe and quick:
-                    // I will just let it be efficiently simple: 
-                    // Controller runs once 0->1 for 2 seconds (handled by Timer delay/logic)
-                    // If we want infinite particles, we need loop.
-                    
-                    // Approach: 
-                    // Controller 1: Entrance (2s), forwards.
-                    // Controller 2: Particles (loop).
-                    // BUT user wants single file simplicity.
-                    // I will use `_controller.forward()` then when done, start a loop for particles?
-                    // Or just use a very long duration effectively or just standard forward.
-                    // Let's just stick to forward() 2-3s and not loop particles to avoid complexity/glitches.
-                    // The particles will just move once which is fine for a 3s splash.
-                    
-                    return Opacity(
-                      opacity: _fadeAnimation.value.clamp(0.0, 1.0),
-                      child: Transform.scale(
-                        scale: _scaleAnimation.value,
-                        child: Image.asset(
-                          'assets/images/Logo Celoe.png',
-                          color: Colors.white,
-                          width: logoSize,
+          // Main Content with LayoutBuilder
+          LayoutBuilder(
+            builder: (context, constraints) {
+              // Calculate responsive sizes based on constraints
+              final width = constraints.maxWidth;
+              final height = constraints.maxHeight;
+              final logoSize = width * 0.4;
+              final textSize = width * 0.06;
+              final isSmallScreen = height < 600;
+
+              return SafeArea(
+                child: Center(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        AnimatedBuilder(
+                          animation: _controller,
+                          builder: (context, child) {
+                            return Opacity(
+                              opacity: _fadeAnimation.value.clamp(0.0, 1.0),
+                              child: Transform.scale(
+                                scale: _scaleAnimation.value,
+                                child: Container(
+                                  width: logoSize,
+                                  height: logoSize,
+                                  constraints: const BoxConstraints(
+                                    minWidth: 100,
+                                    maxWidth: 200,
+                                    minHeight: 100, 
+                                    maxHeight: 200
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.2),
+                                        blurRadius: 20,
+                                        offset: const Offset(0, 10),
+                                      )
+                                    ],
+                                  ),
+                                  padding: const EdgeInsets.all(20),
+                                  child: Image.asset(
+                                    'assets/images/Logo Celoe.png',
+                                    errorBuilder: (ctx, _, __) => const Icon(Icons.school, size: 50, color: Color(0xFFA82E2E)),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 24),
-                AnimatedBuilder(
-                  animation: _controller,
-                  builder: (context, child) {
-                    return Opacity(
-                      opacity: _fadeAnimation.value.clamp(0.0, 1.0),
-                      child: Text(
-                        'Learning Management System',
-                        style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontSize: textSize,
-                          fontWeight: FontWeight.normal,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              offset: const Offset(0, 2),
-                              blurRadius: 4,
-                            ),
-                          ],
+                        SizedBox(height: isSmallScreen ? 16 : 32),
+                        AnimatedBuilder(
+                          animation: _controller,
+                          builder: (context, child) {
+                            return Opacity(
+                              opacity: _fadeAnimation.value.clamp(0.0, 1.0),
+                              child: Column(
+                                 children: [
+                                    Text(
+                                      'CeLOE Community',
+                                      style: GoogleFonts.poppins(
+                                        color: Colors.white,
+                                        fontSize: textSize.clamp(18, 32), // Adaptive with limits
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 1.2,
+                                        shadows: [
+                                          Shadow(
+                                            color: Colors.black.withValues(alpha: 0.3),
+                                            offset: const Offset(0, 2),
+                                            blurRadius: 4,
+                                          ),
+                                        ],
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Learning Management System',
+                                      style: GoogleFonts.poppins(
+                                        color: Colors.white70,
+                                        fontSize: (textSize * 0.5).clamp(12, 16),
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                    SizedBox(height: isSmallScreen ? 16 : 40),
+                                    // Simple Loading Indicator
+                                    const SizedBox(
+                                      width: 20, 
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white54, 
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                 ],
+                              ),
+                            );
+                          },
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                    );
-                  },
+                      ],
+                    ),
+                  ),
                 ),
-              ],
-            ),
+              );
+            },
           ),
         ],
       ),
