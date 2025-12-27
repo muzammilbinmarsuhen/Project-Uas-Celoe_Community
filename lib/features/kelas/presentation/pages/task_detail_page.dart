@@ -137,13 +137,19 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                          style: GoogleFonts.poppins(fontSize: 14, color: Colors.black87, height: 1.6),
                       ),
                       const SizedBox(height: 20),
-                      // Mock Submit Button (Disabled/Static)
+                      // Mock Submit Button 
                       SizedBox(
                          width: double.infinity,
                          child: ElevatedButton(
-                            onPressed: () {}, 
+                            onPressed: () {
+                               if (isQuiz) {
+                                  Navigator.pushNamed(context, '/quiz-overview');
+                               } else {
+                                  // For assignments, standard logic or nothing for now
+                               }
+                            }, 
                             style: ElevatedButton.styleFrom(
-                               backgroundColor: const Color(0xFFA82E2E),
+                               backgroundColor: const Color(0xFFA82E2E), // Maroon
                                padding: const EdgeInsets.symmetric(vertical: 14),
                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             ),

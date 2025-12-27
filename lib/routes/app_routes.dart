@@ -12,6 +12,9 @@ import '../features/pengumuman/presentation/pages/pengumuman_page.dart';
 import '../features/kelas/presentation/pages/course_menu_page.dart';
 import '../features/kelas/presentation/pages/material_detail_page.dart';
 import '../features/kelas/presentation/pages/task_detail_page.dart';
+import '../features/kelas/presentation/pages/quiz/quiz_overview_page.dart';
+import '../features/kelas/presentation/pages/quiz/quiz_question_page.dart';
+import '../features/kelas/presentation/pages/quiz/quiz_review_page.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -51,6 +54,9 @@ class AppRoutes {
          final args = ModalRoute.of(context)!.settings.arguments as dynamic;
          return TaskDetailPage(task: args);
       },
+      '/quiz-overview': (context) => const QuizOverviewPage(),
+      '/quiz-start': (context) => const QuizQuestionPage(),
+      '/quiz-review': (context) => const QuizReviewPage(),
     };
   }
 }

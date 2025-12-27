@@ -48,6 +48,23 @@ class TaskItem {
   });
 }
 
+
+class QuizOption {
+  final String id;
+  final String text;
+  final bool isCorrect;
+
+  QuizOption({required this.id, required this.text, this.isCorrect = false});
+}
+
+class QuizQuestion {
+  final String id;
+  final String text;
+  final List<QuizOption> options;
+
+  QuizQuestion({required this.id, required this.text, required this.options});
+}
+
 class DummyCourseData {
   static final List<MaterialItem> materials = [
     MaterialItem(
@@ -96,6 +113,64 @@ class DummyCourseData {
       type: TaskType.assignment,
       deadline: DateTime.now().add(const Duration(days: 5)),
       isCompleted: true,
+    ),
+  ];
+
+  static final List<QuizQuestion> quizQuestions = [
+    QuizQuestion(
+      id: '1',
+      text: 'Apa tujuan utama dari User Interface (UI) Design?',
+      options: [
+        QuizOption(id: 'A', text: 'Membuat kode program lebih efisien', isCorrect: false),
+        QuizOption(id: 'B', text: 'Meningkatkan estetika tanpa memikirkan fungsi', isCorrect: false),
+        QuizOption(id: 'C', text: 'Memfasilitasi interaksi pengguna dengan sistem secara efektif', isCorrect: true),
+        QuizOption(id: 'D', text: 'Menyimpan data pengguna di database', isCorrect: false),
+        QuizOption(id: 'E', text: 'Membuat animasi yang rumit', isCorrect: false),
+      ],
+    ),
+    QuizQuestion(
+      id: '2',
+      text: 'Manakah dari berikut ini yang BUKAN merupakan prinsip dasar desain antarmuka?',
+      options: [
+        QuizOption(id: 'A', text: 'Konsistensi', isCorrect: false),
+        QuizOption(id: 'B', text: 'Umpan Balik (Feedback)', isCorrect: false),
+        QuizOption(id: 'C', text: 'Kompleksitas', isCorrect: true),
+        QuizOption(id: 'D', text: 'Keterbacaan (Visibility)', isCorrect: false),
+        QuizOption(id: 'E', text: 'Efisiensi', isCorrect: false),
+      ],
+    ),
+     QuizQuestion(
+      id: '3',
+      text: 'Warna manakah yang sering diasosiasikan dengan "Bahaya" atau "Error" dalam desain UI?',
+      options: [
+        QuizOption(id: 'A', text: 'Hijau', isCorrect: false),
+        QuizOption(id: 'B', text: 'Biru', isCorrect: false),
+        QuizOption(id: 'C', text: 'Merah', isCorrect: true),
+        QuizOption(id: 'D', text: 'Kuning', isCorrect: false),
+        QuizOption(id: 'E', text: 'Ungu', isCorrect: false),
+      ],
+    ),
+      QuizQuestion(
+      id: '4',
+      text: 'Istilah "White Space" dalam desain grafis merujuk pada?',
+      options: [
+        QuizOption(id: 'A', text: 'Ruang kosong di antara elemen desain', isCorrect: true),
+        QuizOption(id: 'B', text: 'Warna latar belakang yang harus selalu putih', isCorrect: false),
+        QuizOption(id: 'C', text: 'Area untuk menempatkan logo', isCorrect: false),
+        QuizOption(id: 'D', text: 'Garis tepi halaman', isCorrect: false),
+        QuizOption(id: 'E', text: 'Ukuran font terkecil', isCorrect: false),
+      ],
+    ),
+    QuizQuestion(
+      id: '5',
+      text: 'Apa yang dimaksud dengan "Responsive Design"?',
+      options: [
+        QuizOption(id: 'A', text: 'Desain yang merespons suara pengguna', isCorrect: false),
+        QuizOption(id: 'B', text: 'Desain yang menyesuaikan tampilan dengan ukuran layar perangkat', isCorrect: true),
+        QuizOption(id: 'C', text: 'Desain yang memuat gambar dengan cepat', isCorrect: false),
+        QuizOption(id: 'D', text: 'Desain yang menggunakan animasi bergerak', isCorrect: false),
+        QuizOption(id: 'E', text: 'Desain khusus untuk komputer desktop', isCorrect: false),
+      ],
     ),
   ];
 }
