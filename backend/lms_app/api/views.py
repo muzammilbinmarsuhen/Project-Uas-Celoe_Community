@@ -4,6 +4,10 @@ from rest_framework.decorators import action
 from django.utils import timezone
 from .models import *
 from .serializers import *
+from django.contrib.auth import authenticate
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from django.views.decorators.csrf import csrf_exempt
 
 class CourseViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -197,9 +201,41 @@ class NotificationViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Notification.objects.filter(user=self.request.user).order_by('-created_at')
 
-    @action(detail=True, methods=['post'])
-    def mark_read(self, request, pk=None):
-        notif = self.get_object()
-        notif.is_read = True
         notif.save()
         return Response({'status': 'read'})
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_user(request):
+    data = request.data
+    try:
+        user = User.objects.create_user(
+            username=data['username'],
+            email=data['email'],
+            password=data['password'],
+            first_name=data.get('first_name', ''),
+            last_name=data.get('last_name', '')
+        )
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login_user(request):
+    data = request.data
+    username = data.get('username')
+    password = data.get('password')
+    
+    # Try to authenticate with username first, then email if provided
+    user = authenticate(username=username, password=password)
+    
+    if user is not None:
+        serializer = UserSerializer(user)
+        return Response({
+            'user': serializer.data,
+            'token': 'mock-token-123' # In real production use simplejwt
+        })
+    else:
+        return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)

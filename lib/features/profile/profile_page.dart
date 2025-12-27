@@ -1,15 +1,14 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../core/data/dummy_data.dart'; // For classes data
 import 'profile_controller.dart';
 import 'widgets/profile_header.dart';
 import 'widgets/profile_tabs.dart';
 import 'widgets/about_tab.dart';
 import 'widgets/kelas_tab.dart';
-import 'widgets/edit_profile_tab.dart';
+import 'widgets/profile_form.dart';
+import '../kelas/kelas_controller.dart'; 
 
 class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
@@ -47,42 +46,37 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'Change Profile Photo',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              const Text(
+                'Ubah Foto Profil',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
               const SizedBox(height: 24),
               ListTile(
                 leading: const Icon(Icons.camera_alt),
-                title: const Text('Take Photo'),
-                onTap: () {
+                title: const Text('Ambil Foto'),
+                onTap: () async {
                   Navigator.pop(context);
-                  controller.pickImage(ImageSource.camera);
+                  final success = await controller.pickImage(ImageSource.camera);
+                  if (success && context.mounted) {
+                     ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Foto profile diperbarui!'), backgroundColor: Colors.green),
+                     );
+                  }
                 },
               ),
               ListTile(
                 leading: const Icon(Icons.photo_library),
-                title: const Text('Choose from Gallery'),
-                onTap: () {
+                title: const Text('Pilih dari Galeri'),
+                onTap: () async {
                   Navigator.pop(context);
-                   if (kIsWeb) {
-                      // On Web using file_picker often better but ProfileController has both methods
-                      // Let's use pickImage(ImageSource.gallery) as it supports web too usually
-                      controller.pickImage(ImageSource.gallery);
-                   } else {
-                      controller.pickImage(ImageSource.gallery);
-                   }
+                  final success = await controller.pickImage(ImageSource.gallery);
+                  if (success && context.mounted) {
+                     ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Foto profile diperbarui!'), backgroundColor: Colors.green),
+                     );
+                  }
                 },
               ),
-              if (kIsWeb) 
-                 ListTile(
-                  leading: const Icon(Icons.folder_open),
-                  title: const Text('Choose File (Web)'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    controller.pickFile();
-                  },
-                ),
             ],
           ),
         );
@@ -92,73 +86,73 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {
-    // Watch the profile controller state
-    final user = ref.watch(profileControllerProvider).user;
-    final profileImage = ref.watch(profileControllerProvider).profileImage;
-
-    final name = '${user.firstName ?? ''} ${user.lastName ?? ''}'.trim();
-    final displayName = name.isNotEmpty ? name : user.username;
+    // Watch state
+    final profileState = ref.watch(profileControllerProvider);
+    final user = profileState.user;
     
-    ImageProvider? avatarImage;
-    if (profileImage != null) {
-       if (kIsWeb) {
-         // File object on web might need handling, but Image.file works with standard html renderer? 
-         // Actually kIsWeb + File (dart:io) is tricky. 
-         // ProfileController uses 'File' from dart:io. 
-         // For web, we might need bytes or XFile. 
-         // Let's assume the controller handles it or we use NetworkImage for path if it's a blob url.
-         // However, standard FileImage doesn't work on Web.
-         // Let's check ProfileController implementation again.
-         // It assigns _profileImage = File(pickedFile.path). on Web path is blob/...
-         avatarImage = NetworkImage(profileImage.path); 
-       } else {
-         avatarImage = FileImage(profileImage);
-       }
-    }
+    // Watch classes for KelasTab
+    final classesAsync = ref.watch(kelasControllerProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: Column(
+      backgroundColor: const Color(0xFFF9FAFB), // Consistent background
+      body: Stack(
         children: [
-          // 1. Header
-          ProfileHeader(
-            name: displayName,
-            avatarUrl: user.avatarUrl ?? '',
-            imageProvider: avatarImage,
-            onEditAvatar: _handleEditAvatar,
-          ),
-
-          // 2. Tab Bar
-          Transform.translate(
-            offset: const Offset(0, -25), // Overlap header
-            child: ProfileTabs(controller: _tabController),
-          ),
-
-          // 3. Tab Views
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                 AboutTab(user: user),
-                 KelasTab(classes: DummyData.classes),
-                 EditProfileTab(user: user),
-              ],
-            ),
+          Column(
+             children: [
+                // 1. Header (Fixed Height portion)
+                ProfileHeader(
+                  user: user,
+                  onEditAvatar: _handleEditAvatar, 
+                  onBack: () => Navigator.of(context).pop(),
+                ),
+                
+                // 2. Tab Views (Expanded)
+                Expanded(
+                  child: Padding(
+                     padding: const EdgeInsets.only(top: 25), // Space for floating tabs
+                     child: TabBarView(
+                        controller: _tabController,
+                        physics: const BouncingScrollPhysics(),
+                        children: [
+                           // ABOUT ME
+                           AboutTab(user: user),
+                           
+                           // KELAS SAYA
+                           classesAsync.when(
+                              data: (data) => KelasTab(classes: data),
+                              loading: () => const Center(child: CircularProgressIndicator()),
+                              error: (e, st) => Center(child: Text('Error loading classes: $e')),
+                           ),
+                           
+                           // EDIT PROFILE
+                           ProfileForm(
+                              user: user, 
+                              onSave: (updatedUser) {
+                                 ref.read(profileControllerProvider.notifier).updateUser(updatedUser);
+                                 ref.read(profileControllerProvider.notifier).saveProfile();
+                              }
+                           ),
+                        ],
+                     ),
+                  ),
+                ),
+             ],
           ),
           
-          // Logout Button (Bottom padding)
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextButton.icon(
-              onPressed: () {
-                 // Implement logout
-                 // ref.read(authControllerProvider.notifier).logout(); // If available
-                 Navigator.pushReplacementNamed(context, '/login'); // Simple redirect for now
-              },
-              icon: const Icon(Icons.logout, color: Colors.red),
-              label: const Text('Log Out', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-            ),
+          // 3. Floating Tabs (Positoned)
+          Positioned(
+             top: 230, // Adjust based on Header height (approx 280-300 total header visual)
+             left: 0, 
+             right: 0,
+             child: ProfileTabs(tabController: _tabController),
           ),
+          
+          // Loading Overlay
+          if (profileState.isLoading)
+             Container(
+                color: Colors.black.withValues(alpha: 0.3),
+                child: const Center(child: CircularProgressIndicator()),
+             ),
         ],
       ),
     );

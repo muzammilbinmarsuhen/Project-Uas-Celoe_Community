@@ -9,74 +9,116 @@ class KelasTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-     return ListView.builder(
-       padding: const EdgeInsets.all(16),
+    if (classes.isEmpty) {
+       return Center(child: Text('Belum ada kelas diambil', style: GoogleFonts.poppins(color: Colors.grey)));
+    }
+    
+    return ListView.builder(
+       padding: const EdgeInsets.all(20),
        itemCount: classes.length,
        itemBuilder: (context, index) {
          final item = classes[index];
-         // Logic to determine icon based on class name
+         // Dynamic Icon Logic
          IconData iconData = Icons.book;
          Color iconColor = Colors.blue;
          
-         if (item.namaKelas.toLowerCase().contains('desain')) {
+         final nameLower = item.namaKelas.toLowerCase();
+         if (nameLower.contains('desain') || nameLower.contains('ui/ux')) {
            iconData = Icons.brush;
            iconColor = Colors.purple;
-         } else if (item.namaKelas.toLowerCase().contains('mobile')) {
+         } else if (nameLower.contains('mobile') || nameLower.contains('flutter')) {
            iconData = Icons.phone_android;
            iconColor = Colors.green;
-         } else if (item.namaKelas.toLowerCase().contains('sistem')) {
-            iconData = Icons.computer;
-            iconColor = Colors.orange;
+         } else if (nameLower.contains('web')) {
+           iconData = Icons.language;
+           iconColor = Colors.blue;
+         } else if (nameLower.contains('data') || nameLower.contains('algo')) {
+           iconData = Icons.storage;
+           iconColor = Colors.orange;
          }
 
-
-         return Container(
-           margin: const EdgeInsets.only(bottom: 16),
-           padding: const EdgeInsets.all(16),
-           decoration: BoxDecoration(
-             color: Colors.white,
-             borderRadius: BorderRadius.circular(12),
-             boxShadow: const [
-               BoxShadow(
-                 color: Color.fromRGBO(0, 0, 0, 0.05),
-                 blurRadius: 10,
-                 offset: Offset(0, 4),
+         return TweenAnimationBuilder<double>(
+           tween: Tween(begin: 0.0, end: 1.0),
+           duration: Duration(milliseconds: 400 + (index * 100)),
+           curve: Curves.easeOut,
+           builder: (context, value, child) {
+             return Transform.translate(
+               offset: Offset(0, 50 * (1 - value)),
+               child: Opacity(
+                 opacity: value,
+                 child: child,
                ),
-             ],
-           ),
-           child: Row(
-             children: [
-               Container(
-                 width: 50, height: 50,
-                 decoration: BoxDecoration(
-                   color: iconColor.withValues(alpha: 0.1),
-                   borderRadius: BorderRadius.circular(25),
+             );
+           },
+           child: GestureDetector(
+             onTap: () {
+                Navigator.pushNamed(context, '/course-menu');
+             },
+             child: Container(
+             margin: const EdgeInsets.only(bottom: 16),
+             padding: const EdgeInsets.all(16),
+             decoration: BoxDecoration(
+               color: Colors.white,
+               borderRadius: BorderRadius.circular(16),
+               boxShadow: [
+                 BoxShadow(
+                   color: Colors.black.withValues(alpha: 0.05),
+                   blurRadius: 10,
+                   offset: const Offset(0, 4),
                  ),
-                 child: Icon(iconData, color: iconColor),
-               ),
-               const SizedBox(width: 16),
-               Expanded(
-                 child: Column(
-                   crossAxisAlignment: CrossAxisAlignment.start,
-                   children: [
-                     Text(
-                       item.namaKelas,
-                       style: GoogleFonts.poppins(
-                         fontWeight: FontWeight.bold,
-                         fontSize: 14,
+               ],
+             ),
+             child: Row(
+               children: [
+                 Container(
+                   width: 50, height: 50,
+                   decoration: BoxDecoration(
+                     color: iconColor.withValues(alpha: 0.1),
+                     borderRadius: BorderRadius.circular(12),
+                   ),
+                   child: Icon(iconData, color: iconColor, size: 24),
+                 ),
+                 const SizedBox(width: 16),
+                 Expanded(
+                   child: Column(
+                     crossAxisAlignment: CrossAxisAlignment.start,
+                     children: [
+                       Text(
+                         item.namaKelas,
+                         style: GoogleFonts.poppins(
+                           fontWeight: FontWeight.w600,
+                           fontSize: 15,
+                           color: Colors.black87,
+                         ),
+                         maxLines: 2,
+                         overflow: TextOverflow.ellipsis,
                        ),
-                     ),
-                     const SizedBox(height: 4),
-                     Text('${item.kodeKelas} [${item.dosen}]', style: GoogleFonts.poppins(color: Colors.grey, fontSize: 12)),
-                     const SizedBox(height: 4),
-                     Text('Dimulai ${item.tanggalMulai.toLocal().toString().split(' ')[0]}', style: GoogleFonts.poppins(color: Colors.orange, fontSize: 12)),
-                   ],
+                       const SizedBox(height: 4),
+                       Text(
+                         '${item.kodeKelas} • ${item.dosen}', 
+                         style: GoogleFonts.poppins(color: Colors.grey[600], fontSize: 12),
+                         maxLines: 1,
+                         overflow: TextOverflow.ellipsis,
+                       ),
+                       const SizedBox(height: 4),
+                       Text(
+                         'Mulai: ${_formatDate(item.tanggalMulai)}', 
+                         style: GoogleFonts.poppins(color: iconColor, fontSize: 11, fontWeight: FontWeight.w500),
+                       ),
+                     ],
+                   ),
                  ),
-               ),
-             ],
+                 const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+               ],
+             ),
            ),
+          ),
          );
        },
-     );
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
   }
 }

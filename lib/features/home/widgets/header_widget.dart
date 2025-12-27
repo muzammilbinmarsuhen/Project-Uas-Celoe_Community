@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'dart:io';
+
 class HeaderWidget extends StatelessWidget {
   final String username;
   final String? avatarUrl;
+  final String? photoPath;
   final VoidCallback? onProfileTap;
 
   const HeaderWidget({
     super.key,
     required this.username,
     this.avatarUrl,
+    this.photoPath,
     this.onProfileTap,
   });
 
@@ -118,10 +122,8 @@ class HeaderWidget extends StatelessWidget {
                     child: CircleAvatar(
                       radius: 12,
                       backgroundColor: Colors.grey[200],
-                      backgroundImage: (avatarUrl != null && avatarUrl!.startsWith('http')) 
-                          ? NetworkImage(avatarUrl!) 
-                          : null,
-                      child: (avatarUrl == null || !avatarUrl!.startsWith('http'))
+                      backgroundImage: _getAvatarImage(),
+                      child: _getAvatarImage() == null
                           ? const Icon(Icons.person, size: 16, color: Colors.grey)
                           : null,
                     ),
@@ -133,5 +135,18 @@ class HeaderWidget extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  ImageProvider? _getAvatarImage() {
+    if (photoPath != null && photoPath!.isNotEmpty) {
+      if (photoPath!.startsWith('http') || photoPath!.startsWith('blob:')) {
+        return NetworkImage(photoPath!);
+      }
+      return FileImage(File(photoPath!));
+    }
+    if (avatarUrl != null && avatarUrl!.isNotEmpty) {
+      return NetworkImage(avatarUrl!);
+    }
+    return null;
   }
 }

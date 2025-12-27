@@ -11,4 +11,6 @@ router.register(r'notifications', NotificationViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('auth/register/', register_user),
+    path('auth/login/', login_user),
 ]

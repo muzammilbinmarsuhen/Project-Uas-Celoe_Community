@@ -9,6 +9,8 @@ import '../features/berita/presentation/pages/berita_page.dart';
 import '../features/notification/notification_page.dart';
 import '../features/kelas/kelas_page.dart';
 import '../features/pengumuman/presentation/pages/pengumuman_page.dart';
+import '../features/kelas/presentation/pages/course_menu_page.dart';
+import '../features/kelas/presentation/pages/material_detail_page.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -18,11 +20,14 @@ class AppRoutes {
   static const String home = '/home'; 
   static const String berita = '/berita';
   
-  // Future routes
   static const String profile = '/profile';
   static const String kelas = '/kelas';
   static const String notification = '/notification';
   static const String pengumuman = '/pengumuman';
+
+  // NEW ROUTES
+  static const String courseMenu = '/course-menu';
+  static const String materialDetail = '/material-detail';
 
   static Map<String, WidgetBuilder> getRoutes() {
     return {
@@ -35,6 +40,12 @@ class AppRoutes {
       kelas: (context) => const KelasPage(),
       notification: (context) => const NotifikasiPage(),
       pengumuman: (context) => const PengumumanPage(),
+      
+      courseMenu: (context) => const CourseMenuPage(),
+      materialDetail: (context) {
+        final args = ModalRoute.of(context)!.settings.arguments as dynamic;
+        return MaterialDetailPage(material: args);
+      },
     };
   }
 }

@@ -1,24 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../routes/app_routes.dart';
 import '../../core/widgets/custom_text_field.dart';
 import '../../core/widgets/custom_button.dart';
 import '../auth/widgets/auth_background_widgets.dart';
+import 'data/auth_repository.dart';
 
-class RegisterPage extends StatefulWidget {
+class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  ConsumerState<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void dispose() {
@@ -33,22 +37,34 @@ class _RegisterPageState extends State<RegisterPage> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('username', _usernameController.text);
-      await prefs.setString('email', _emailController.text);
-      await prefs.setString('password', _passwordController.text);
-      await prefs.setBool('isLoggedIn', true);
+      // Split username (or in future add dedicated fields) for first/last name
+      // Logic: First word is First Name, rest is Last Name
+      final fullName = _usernameController.text.trim();
+      final parts = fullName.split(' ');
+      final firstName = parts.first;
+      final lastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+      
+      final success = await ref.read(authRepositoryProvider).register(
+          _usernameController.text, // Use full name as username also for now
+          _emailController.text, 
+          _passwordController.text,
+          firstName,
+          lastName
+      );
 
       if (mounted) {
          setState(() => _isLoading = false);
-         Navigator.pushReplacementNamed(
-            context, 
-            AppRoutes.home,
-            arguments: {'username': _usernameController.text, 'email': _emailController.text},
-         );
+         if (success) {
+            // Navigate to login or home? Let's go to Login to force re-auth or auto-login
+            Navigator.pushReplacementNamed(context, AppRoutes.login);
+            ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Registrasi berhasil! Silakan login.')),
+            );
+         } else {
+             ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Registrasi gagal. Coba lagi.')),
+            );
+         }
       }
     }
   }
@@ -143,18 +159,24 @@ class _RegisterPageState extends State<RegisterPage> {
                                label: 'Password',
                                hint: 'Buat password',
                                controller: _passwordController,
-                               isPassword: true,
+                               isPassword: _obscurePassword,
                                validator: (val) => val!.length < 6 ? 'Min. 6 karakter' : null,
-                               suffixIcon: const Icon(Icons.lock_outline),
+                               suffixIcon: IconButton(
+                                 icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                                 onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                               ),
                              ),
                              const SizedBox(height: 16),
                              CustomTextField(
                                label: 'Konfirmasi Password',
                                hint: 'Ulangi password',
                                controller: _confirmPasswordController,
-                               isPassword: true,
+                               isPassword: _obscureConfirmPassword,
                                validator: (val) => val != _passwordController.text ? 'Password tidak sama' : null,
-                               suffixIcon: const Icon(Icons.lock_outline),
+                               suffixIcon: IconButton(
+                                 icon: Icon(_obscureConfirmPassword ? Icons.visibility_off : Icons.visibility),
+                                 onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                               ),
                              ),
                              const SizedBox(height: 32),
                              

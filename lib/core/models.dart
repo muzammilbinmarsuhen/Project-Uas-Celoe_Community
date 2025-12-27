@@ -4,6 +4,7 @@ class UserModel {
   final String username;
   final String email;
   final String? avatarUrl;
+  final String? photoPath;
   final String? firstName;
   final String? lastName;
   final String? country;
@@ -13,11 +14,13 @@ class UserModel {
   final DateTime? firstAccess;
   final DateTime? lastAccess;
 
+
   UserModel({
     required this.id,
     required this.username,
     required this.email,
     this.avatarUrl,
+    this.photoPath,
     this.firstName,
     this.lastName,
     this.country,
@@ -34,14 +37,15 @@ class UserModel {
       username: json['username'] ?? '',
       email: json['email'] ?? '',
       avatarUrl: json['avatar_url'],
+      photoPath: json['photo_path'],
       firstName: json['first_name'],
       lastName: json['last_name'],
       country: json['country'],
       description: json['description'],
       faculty: json['faculty'],
       studyProgram: json['study_program'],
-      firstAccess: json['first_access'] != null ? DateTime.parse(json['first_access']) : null,
-      lastAccess: json['last_access'] != null ? DateTime.parse(json['last_access']) : null,
+      firstAccess: json['first_access'] != null ? DateTime.tryParse(json['first_access']) : null,
+      lastAccess: json['last_access'] != null ? DateTime.tryParse(json['last_access']) : null,
     );
   }
 
@@ -51,6 +55,7 @@ class UserModel {
       'username': username,
       'email': email,
       'avatar_url': avatarUrl,
+      'photo_path': photoPath,
       'first_name': firstName,
       'last_name': lastName,
       'country': country,

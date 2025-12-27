@@ -2,37 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class ProfileTabs extends StatelessWidget {
-  final TabController controller;
+  final TabController tabController;
 
-  const ProfileTabs({super.key, required this.controller});
+  const ProfileTabs({super.key, required this.tabController});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
           BoxShadow(
-            color: Color.fromRGBO(0, 0, 0, 0.1),
-            blurRadius: 10,
-            offset: Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
       child: TabBar(
-        controller: controller,
-        labelColor: const Color(0xFFA82E2E), // Active color
+        controller: tabController,
+        labelColor: const Color(0xFFA82E2E),
         unselectedLabelColor: Colors.grey,
         indicatorColor: const Color(0xFFA82E2E),
         indicatorSize: TabBarIndicatorSize.label,
-        labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-        unselectedLabelStyle: GoogleFonts.poppins(),
+        indicatorWeight: 3,
+        labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13),
+        unselectedLabelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w500, fontSize: 13),
         tabs: const [
-          Tab(text: 'About Me'),
-          Tab(text: 'Kelas'),
-          Tab(text: 'Edit Profile'),
+          Tab(text: 'ABOUT ME'),
+          Tab(text: 'KELAS'),
+          Tab(text: 'EDIT PROFILE'),
         ],
       ),
     );

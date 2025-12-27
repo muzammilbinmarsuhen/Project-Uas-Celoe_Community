@@ -9,6 +9,7 @@ import 'widgets/course_progress_card_widget.dart';
 
 import '../pengaduan/presentation/pages/pengaduan_page.dart';
 import '../profile/profile_page.dart';
+import 'package:celoe_community/features/profile/profile_controller.dart';
 
 class DashboardContentPage extends ConsumerStatefulWidget {
   final Map<String, dynamic> userData;
@@ -44,6 +45,13 @@ class _DashboardContentPageState extends ConsumerState<DashboardContentPage> wit
   Widget build(BuildContext context) {
     // Mock Data
     final programs = DummyData.courses; 
+    
+    // Watch Profile State for Single User Truth
+    final profileState = ref.watch(profileControllerProvider);
+    final user = profileState.user;
+    
+    // Fallback to widget.userData if profile not loaded yet (though it should be)
+    final displayName = user.username.isNotEmpty ? user.username : (widget.userData['username'] ?? 'User');
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
@@ -57,8 +65,9 @@ class _DashboardContentPageState extends ConsumerState<DashboardContentPage> wit
               FadeTransition(
                 opacity: _fadeAnimation,
                 child: HeaderWidget(
-                  username: widget.userData['username'] ?? 'User',
-                  avatarUrl: null, // to be implemented with real profile
+                  username: displayName,
+                  avatarUrl: user.avatarUrl, 
+                  photoPath: user.photoPath,
                   onProfileTap: () {
                      Navigator.push(
                         context, 

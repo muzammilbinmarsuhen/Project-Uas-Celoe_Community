@@ -20,6 +20,54 @@ class ApiService extends ChangeNotifier {
     if (_authToken != null) 'Authorization': 'Bearer $_authToken',
   };
 
+  // --- Auth ---
+  Future<Map<String, dynamic>?> login(String username, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/login/'),
+        headers: headers,
+        body: json.encode({
+          'username': username,
+          'password': password,
+        }),
+      );
+      
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        debugPrint('Login failed: ${response.body}');
+      }
+    } catch (e) {
+      debugPrint('API Error: $e');
+    }
+    return null;
+  }
+
+  Future<Map<String, dynamic>?> register(String username, String email, String password, String firstName, String lastName) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/register/'),
+        headers: headers,
+        body: json.encode({
+          'username': username,
+          'email': email,
+          'password': password,
+          'first_name': firstName,
+          'last_name': lastName,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        return json.decode(response.body);
+      } else {
+         debugPrint('Register failed: ${response.body}');
+      }
+    } catch (e) {
+      debugPrint('API Error: $e');
+    }
+    return null;
+  }
+
   // --- Courses ---
   Future<List<Course>> getCourses() async {
     try {
