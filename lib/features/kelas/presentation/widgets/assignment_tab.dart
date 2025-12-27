@@ -27,7 +27,11 @@ class AssignmentTab extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-         Navigator.pushNamed(context, '/task-detail', arguments: item);
+         if (isQuiz) {
+            Navigator.pushNamed(context, '/task-detail', arguments: item); // Assuming AppRoutes.taskDetail is '/task-detail'
+         } else {
+            Navigator.pushNamed(context, '/assignment-detail');
+         }
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),

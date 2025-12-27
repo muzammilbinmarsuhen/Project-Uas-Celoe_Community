@@ -116,38 +116,47 @@ class _MaterialDetailPageState extends State<MaterialDetailPage> with SingleTick
                     child: Opacity(opacity: value, child: child),
                  );
               },
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                   color: Colors.white,
-                   borderRadius: BorderRadius.circular(50), // Pill Shape
-                   border: Border.all(color: Colors.grey[200]!),
-                ),
-                child: Row(
-                   children: [
-                      Container(
-                         padding: const EdgeInsets.all(8),
-                         decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
-                         child: Icon(icon, color: color, size: 20),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                         child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                               Text(item.title, style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13)),
-                            ],
-                         ),
-                      ),
-                      TweenAnimationBuilder<double>(
-                         tween: Tween(begin: 0.0, end: 1.0),
-                         duration: const Duration(milliseconds: 600),
-                         curve: Curves.elasticOut,
-                         builder: (context, val, child) => Transform.scale(scale: val, child: child),
-                         child: const Icon(Icons.check_circle, color: Colors.green, size: 20),
-                      ),
-                   ],
+              child: GestureDetector(
+                onTap: () {
+                   if (item.type == 'video') {
+                      Navigator.pushNamed(context, '/material-video');
+                   } else {
+                      Navigator.pushNamed(context, '/material-slide');
+                   }
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                     color: Colors.white,
+                     borderRadius: BorderRadius.circular(50), // Pill Shape
+                     border: Border.all(color: Colors.grey[200]!),
+                  ),
+                  child: Row(
+                     children: [
+                        Container(
+                           padding: const EdgeInsets.all(8),
+                           decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
+                           child: Icon(icon, color: color, size: 20),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                           child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                 Text(item.title, style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13)),
+                              ],
+                           ),
+                        ),
+                        TweenAnimationBuilder<double>(
+                           tween: Tween(begin: 0.0, end: 1.0),
+                           duration: const Duration(milliseconds: 600),
+                           curve: Curves.elasticOut,
+                           builder: (context, val, child) => Transform.scale(scale: val, child: child),
+                           child: const Icon(Icons.check_circle, color: Colors.green, size: 20),
+                        ),
+                     ],
+                  ),
                 ),
               ),
            );

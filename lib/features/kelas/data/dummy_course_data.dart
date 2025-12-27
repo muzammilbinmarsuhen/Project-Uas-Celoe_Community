@@ -173,4 +173,21 @@ class DummyCourseData {
       ],
     ),
   ];
+
+  // Dummy Slide Data
+  static final List<String> slides = [
+    'User Interface (UI) adalah titik interaksi antara pengguna dan perangkat digital atau komputer.',
+    'Tujuan utama UI adalah membuat interaksi pengguna seefisien dan sesederhana mungkin (user-friendly).',
+    'Komponen UI meliputi elemen input (tombol, text field), navigasi (slider, pagination), dan informasi (tooltips, progress bar).',
+    'Konsistensi adalah kunci. Gunakan warna, font, dan elemen desain yang seragam di seluruh aplikasi.',
+    'Responsivitas: UI harus terlihat bagus dan berfungsi baik di berbagai ukuran layar dan perangkat.',
+    'Accessibility: Desain harus dapat diakses oleh semua orang, termasuk pengguna dengan keterbatasan.',
+  ];
+  
+  // Dummy Related Videos
+  static final List<Map<String, String>> relatedVideos = [
+     {'title': 'Prinsip Dasar UX Design', 'duration': '10:05'},
+     {'title': 'Tutorial Figma untuk Pemula', 'duration': '14:20'},
+     {'title': 'Color Theory dalam UI', 'duration': '08:45'},
+  ];
 }

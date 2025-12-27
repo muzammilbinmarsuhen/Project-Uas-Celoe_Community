@@ -15,6 +15,10 @@ import '../features/kelas/presentation/pages/task_detail_page.dart';
 import '../features/kelas/presentation/pages/quiz/quiz_overview_page.dart';
 import '../features/kelas/presentation/pages/quiz/quiz_question_page.dart';
 import '../features/kelas/presentation/pages/quiz/quiz_review_page.dart';
+import '../features/kelas/presentation/pages/material/material_slide_page.dart';
+import '../features/kelas/presentation/pages/material/video_material_page.dart';
+import '../features/kelas/presentation/pages/assignment/assignment_detail_page.dart';
+import '../features/kelas/presentation/pages/assignment/upload_file_page.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -57,6 +61,10 @@ class AppRoutes {
       '/quiz-overview': (context) => const QuizOverviewPage(),
       '/quiz-start': (context) => const QuizQuestionPage(),
       '/quiz-review': (context) => const QuizReviewPage(),
+      '/material-slide': (context) => const MaterialSlidePage(),
+      '/material-video': (context) => const VideoMaterialPage(),
+      '/assignment-detail': (context) => const AssignmentDetailPage(),
+      '/upload-file': (context) => const UploadFilePage(),
     };
   }
 }
