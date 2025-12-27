@@ -11,6 +11,7 @@ import '../features/kelas/kelas_page.dart';
 import '../features/pengumuman/presentation/pages/pengumuman_page.dart';
 import '../features/kelas/presentation/pages/course_menu_page.dart';
 import '../features/kelas/presentation/pages/material_detail_page.dart';
+import '../features/kelas/presentation/pages/task_detail_page.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -28,6 +29,7 @@ class AppRoutes {
   // NEW ROUTES
   static const String courseMenu = '/course-menu';
   static const String materialDetail = '/material-detail';
+  static const String taskDetail = '/task-detail';
 
   static Map<String, WidgetBuilder> getRoutes() {
     return {
@@ -40,11 +42,14 @@ class AppRoutes {
       kelas: (context) => const KelasPage(),
       notification: (context) => const NotifikasiPage(),
       pengumuman: (context) => const PengumumanPage(),
-      
       courseMenu: (context) => const CourseMenuPage(),
       materialDetail: (context) {
         final args = ModalRoute.of(context)!.settings.arguments as dynamic;
         return MaterialDetailPage(material: args);
+      },
+      taskDetail: (context) {
+         final args = ModalRoute.of(context)!.settings.arguments as dynamic;
+         return TaskDetailPage(task: args);
       },
     };
   }

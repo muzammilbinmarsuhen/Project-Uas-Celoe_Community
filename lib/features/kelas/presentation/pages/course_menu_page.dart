@@ -37,28 +37,46 @@ class _CourseMenuPageState extends State<CourseMenuPage> with SingleTickerProvid
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => Navigator.pop(context),
           ),
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'DESAIN ANTARMUKA & PENGALAMAN PENGGUNA',
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
+          centerTitle: true,
+          title: TweenAnimationBuilder<double>(
+            tween: Tween(begin: -20, end: 0),
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+            builder: (context, value, child) {
+              return Transform.translate(
+                offset: Offset(0, value),
+                child: Opacity(
+                  opacity: (value + 20) / 20, // Fade in sync with slide
+                  child: child,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 2),
-              Text(
-                'D4SM-42-03 [ADY]',
-                style: GoogleFonts.poppins(
-                  color: Colors.white.withValues(alpha: 0.8),
-                  fontSize: 12,
+              );
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min, // Center vertically
+              crossAxisAlignment: CrossAxisAlignment.center, // Center horizontally
+              children: [
+                Text(
+                  'DESAIN ANTARMUKA & PENGALAMAN PENGGUNA',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
                 ),
-              ),
-            ],
+                const SizedBox(height: 2),
+                Text(
+                  'D4SM-42-03 [ADY]',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontSize: 12,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
           elevation: 0,
         ),

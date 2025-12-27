@@ -1,176 +1,114 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'presentation/widgets/material_tab.dart';
+import 'presentation/widgets/assignment_tab.dart';
 
-import '../../../../core/theme/app_theme.dart';
-import 'kelas_controller.dart';
-import '../profile/profile_controller.dart';
-import 'widgets/kelas_card.dart';
-
-class KelasPage extends ConsumerWidget {
+class KelasPage extends StatefulWidget {
   const KelasPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final kelasAsync = ref.watch(kelasControllerProvider);
-    final currentUser = ref.watch(profileControllerProvider).user;
+  State<KelasPage> createState() => _KelasPageState();
+}
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              color: AppTheme.primaryMaroon,
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  ),
-                  const SizedBox(width: 16),
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: Colors.white,
-                    backgroundImage: currentUser.avatarUrl != null
-                        ? NetworkImage(currentUser.avatarUrl!)
-                        : null,
-                    child: currentUser.avatarUrl == null
-                        ? const Icon(
-                            Icons.person,
-                            color: AppTheme.primaryMaroon,
-                          )
-                        : null,
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Text(
-                      currentUser.username,
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+class _KelasPageState extends State<KelasPage> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
 
-            // Tab Menu
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  _buildTabItem('About Me', false),
-                  _buildTabItem('Kelas', true),
-                  _buildTabItem('Edit Profile', false),
-                ],
-              ),
-            ),
-
-            // Kelas List
-            Expanded(
-              child: kelasAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, stack) => Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.error_outline,
-                        size: 80,
-                        color: Colors.grey,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Error: $error',
-                        style: GoogleFonts.poppins(color: Colors.grey),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-                data: (kelasList) => kelasList.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.school_outlined,
-                              size: 80,
-                              color: Colors.grey,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Belum ada kelas yang diambil',
-                              style: GoogleFonts.poppins(color: Colors.grey),
-                            ),
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        itemCount: kelasList.length,
-                        itemBuilder: (context, index) {
-                          final kelas = kelasList[index];
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: KelasCardWidget(
-                              kelas: kelas,
-                              onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Detail kelas: ${kelas.namaKelas}',
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          );
-                        },
-                      ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
   }
 
-  Widget _buildTabItem(String title, bool isActive) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: isActive ? AppTheme.primaryMaroon : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(
-          title,
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: isActive ? Colors.white : Colors.black87,
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF9FAFB),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(70),
+        child: AppBar(
+          backgroundColor: const Color(0xFFA82E2E), // Maroon
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.of(context).maybePop(), // Use maybePop to avoid black screen if root
           ),
-          textAlign: TextAlign.center,
+          centerTitle: true,
+          title: TweenAnimationBuilder<double>(
+            tween: Tween(begin: -20, end: 0),
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+            builder: (context, value, child) {
+              return Transform.translate(
+                offset: Offset(0, value),
+                child: Opacity(
+                  opacity: (value + 20) / 20, // Fade in sync with slide
+                  child: child,
+                ),
+              );
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min, // Center vertically
+              crossAxisAlignment: CrossAxisAlignment.center, // Center horizontally
+              children: [
+                Text(
+                  'DESAIN ANTARMUKA & PENGALAMAN PENGGUNA',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'D4SM-42-03 [ADY]',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontSize: 12,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+          elevation: 0,
         ),
+      ),
+      body: Column(
+        children: [
+          Container(
+            color: Colors.white,
+            child: TabBar(
+              controller: _tabController,
+              labelColor: Colors.black,
+              unselectedLabelColor: Colors.grey,
+              indicatorColor: Colors.black, // Active indicator black as requested
+              indicatorWeight: 3,
+              labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 14),
+              unselectedLabelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w400, fontSize: 14),
+              tabs: const [
+                Tab(text: 'Materi'),
+                Tab(text: 'Tugas dan Kuis'),
+              ],
+            ),
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: const [
+                MaterialTab(),
+                AssignmentTab(),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
