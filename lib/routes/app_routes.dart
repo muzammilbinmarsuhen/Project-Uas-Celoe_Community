@@ -21,6 +21,9 @@ import '../features/kelas/presentation/pages/assignment/assignment_detail_page.d
 import '../features/kelas/presentation/pages/assignment/upload_file_page.dart';
 import '../features/kelas/presentation/pages/material/article_list_page.dart';
 import '../features/kelas/presentation/pages/material/article_detail_page.dart';
+import '../features/kelas/presentation/pages/material/document_viewer_page.dart';
+import '../features/home/program_detail_page.dart';
+import '../features/home/announcement_detail_page.dart';
 import '../features/kelas/data/dummy_course_data.dart'; // Import for fallback data
 
 
@@ -76,6 +79,19 @@ class AppRoutes {
       '/article-detail': (context) {
           final args = ModalRoute.of(context)!.settings.arguments as Map<String, String>;
           return ArticleDetailPage(article: args);
+      },
+      '/document-viewer': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, String>;
+          return DocumentViewerPage(title: args['title']!, type: args['type']!);
+      },
+      '/program-detail': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as dynamic;
+           // Fallback if needed, though usually strict for detail pages
+          return ProgramDetailPage(course: args);
+      },
+      '/announcement-detail': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, String>;
+          return AnnouncementDetailPage(announcement: args);
       },
     };
   }

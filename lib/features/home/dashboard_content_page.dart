@@ -149,7 +149,9 @@ class _DashboardContentPageState extends ConsumerState<DashboardContentPage> wit
                       padding: const EdgeInsets.only(bottom: 12),
                       child: CourseProgressCardWidget(
                         course: program,
-                        onTap: () {}, // Navigate to detail
+                        onTap: () {
+                           Navigator.pushNamed(context, '/program-detail', arguments: program);
+                        }, // Navigate to detail
                       ),
                     )),
                     

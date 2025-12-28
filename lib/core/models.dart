@@ -167,6 +167,9 @@ class Course {
   final String semester;
   final double progress;
   final String? thumbnail;
+  final String description;
+  final String instructor;
+  final String category;
   // Previously we nested meetings/assignments/quizzes. 
   // Per new spec, these are fetched separately usually, but for Detail Page efficient loading we might still map them if API provides.
   // Django serializer 'CourseSerializer' currently sends light data. 
@@ -179,6 +182,9 @@ class Course {
     required this.semester, 
     required this.progress,
     this.thumbnail,
+    this.description = 'Pelajari materi komprehensif ini untuk meningkatkan keahlian Anda.',
+    this.instructor = 'Dosen Telkom University',
+    this.category = 'Akademik',
   });
 
   factory Course.fromJson(Map<String, dynamic> json) {
@@ -188,6 +194,9 @@ class Course {
       semester: json['semester'] ?? '2021/2',
       progress: json['progress'] ?? 0.0,
       thumbnail: json['thumbnail'],
+      description: json['description'] ?? 'Pelajari materi komprehensif ini untuk meningkatkan keahlian Anda.',
+      instructor: json['instructor'] ?? 'Dosen Telkom University',
+      category: json['category'] ?? 'Akademik',
     );
   }
 }

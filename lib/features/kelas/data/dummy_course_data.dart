@@ -71,12 +71,14 @@ class DummyCourseData {
       id: '1',
       meetingTitle: 'Pertemuan 1',
       title: '01 - Pengantar User Interface Design',
-      subtitle: '3 URLs, 2 Files, 3 Interactive Content',
+      subtitle: '3 URLs, 5 Files, 3 Interactive Content',
       isCompleted: true,
       attachments: [
         AttachmentItem(title: 'Slide Presentasi PDF', type: 'pdf', url: '#'),
         AttachmentItem(title: 'Rekaman Zoom Meeting', type: 'video', url: '#'),
         AttachmentItem(title: 'Referensi Artikel Medium', type: 'link', url: '#'),
+        AttachmentItem(title: 'Materi Word Document', type: 'doc', url: '#'),
+        AttachmentItem(title: 'Slide PowerPoint (PPT)', type: 'ppt', url: '#'),
       ],
     ),
     MaterialItem(
@@ -86,7 +88,7 @@ class DummyCourseData {
       subtitle: '2 URLs, 1 File',
       isCompleted: false,
       attachments: [
-        AttachmentItem(title: 'Modul Bab 2', type: 'pdf', url: '#'),
+        AttachmentItem(title: 'Modul Bab 2 (PDF)', type: 'pdf', url: '#'),
         AttachmentItem(title: 'Contoh Layout Figma', type: 'link', url: '#'),
       ],
     ),

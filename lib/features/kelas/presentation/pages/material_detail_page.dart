@@ -125,6 +125,12 @@ class _MaterialDetailPageState extends State<MaterialDetailPage> with SingleTick
                       Navigator.pushNamed(context, '/material-video');
                    } else if (item.type == 'link') {
                       Navigator.pushNamed(context, '/article-list');
+                   } else if (['pdf', 'ppt', 'doc'].contains(item.type)) {
+                      Navigator.pushNamed(
+                         context, 
+                         '/document-viewer',
+                         arguments: {'title': item.title, 'type': item.type}
+                      );
                    } else {
                       Navigator.pushNamed(context, '/material-slide');
                    }
