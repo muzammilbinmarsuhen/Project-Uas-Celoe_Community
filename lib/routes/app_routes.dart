@@ -9,6 +9,7 @@ import '../features/berita/presentation/pages/berita_page.dart';
 import '../features/notification/notification_page.dart';
 import '../features/kelas/kelas_page.dart';
 import '../features/pengumuman/presentation/pages/pengumuman_page.dart';
+import '../features/pengaduan/presentation/pages/pengaduan_form_page.dart'; // Import Form Page
 import '../features/kelas/presentation/pages/course_menu_page.dart';
 import '../features/kelas/presentation/pages/material_detail_page.dart';
 import '../features/kelas/presentation/pages/task_detail_page.dart';
@@ -93,6 +94,10 @@ class AppRoutes {
       '/announcement-detail': (context) {
           final args = ModalRoute.of(context)!.settings.arguments as Map<String, String>;
           return AnnouncementDetailPage(announcement: args);
+      },
+      '/pengaduan-form': (context) {
+         final args = ModalRoute.of(context)!.settings.arguments as String?;
+         return PengaduanFormPage(category: args ?? 'Umum');
       },
     };
   }

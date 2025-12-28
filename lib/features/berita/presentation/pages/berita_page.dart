@@ -24,7 +24,16 @@ class BeritaPage extends StatelessWidget {
           final item = list[index];
           return GestureDetector(
             onTap: () {
-               // Navigate to detail
+               // Use ArticleDetailPage which accepts title and url.
+               // Since dummy data might be local content, we might use a different page or just pass a google search url for demo.
+               Navigator.pushNamed(
+                 context, 
+                 '/article-detail',
+                 arguments: {
+                   'title': item.title,
+                   'url': 'https://www.google.com/search?q=${Uri.encodeComponent(item.title)}', // Demo URL
+                 }
+               );
             },
             child: Card(
               margin: const EdgeInsets.only(bottom: 20),

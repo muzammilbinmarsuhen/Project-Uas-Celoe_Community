@@ -110,7 +110,7 @@ class _DashboardContentPageState extends ConsumerState<DashboardContentPage> wit
                            Navigator.pushNamed(context, '/berita');
                         }),
                         _buildShortcutItem(context, ref, Icons.info_outline, 'Tentang', Colors.purple, () {
-                           // Show Dialog or Navigate
+                           _showAboutDialog(context);
                         }),
                       ],
                     ),
@@ -125,12 +125,17 @@ class _DashboardContentPageState extends ConsumerState<DashboardContentPage> wit
                           'Info Terkini',
                           style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
-                        Text(
-                          'Lihat Semua',
-                          style: GoogleFonts.poppins(
-                            color: const Color(0xFFA82E2E),
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12,
+                        GestureDetector(
+                          onTap: () {
+                             Navigator.pushNamed(context, '/pengumuman');
+                          },
+                          child: Text(
+                            'Lihat Semua',
+                            style: GoogleFonts.poppins(
+                              color: const Color(0xFFA82E2E),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ],
@@ -263,6 +268,55 @@ class _DashboardContentPageState extends ConsumerState<DashboardContentPage> wit
              ),
           ],
        ),
+    );
+  }
+  void _showAboutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                height: 80, width: 80,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFA82E2E),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.school, color: Colors.white, size: 40),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Celoe Community',
+                style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                'v1.0.0',
+                style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Aplikasi Learning Management System (LMS) untuk komunitas Celoe. Belajar dimana saja, kapan saja.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(fontSize: 13, color: Colors.black87),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                '© 2025 Celoe Community',
+                style: GoogleFonts.poppins(fontSize: 11, color: Colors.grey),
+              ),
+            ],
+          ),
+          actions: [
+             TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Tutup', style: GoogleFonts.poppins(color: const Color(0xFFA82E2E), fontWeight: FontWeight.bold)),
+             )
+          ],
+        );
+      },
     );
   }
 }
