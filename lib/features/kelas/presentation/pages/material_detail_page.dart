@@ -123,6 +123,8 @@ class _MaterialDetailPageState extends State<MaterialDetailPage> with SingleTick
                 onTap: () {
                    if (item.type == 'video') {
                       Navigator.pushNamed(context, '/material-video');
+                   } else if (item.type == 'link') {
+                      Navigator.pushNamed(context, '/article-list');
                    } else {
                       Navigator.pushNamed(context, '/material-slide');
                    }

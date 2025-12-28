@@ -19,6 +19,8 @@ import '../features/kelas/presentation/pages/material/material_slide_page.dart';
 import '../features/kelas/presentation/pages/material/video_material_page.dart';
 import '../features/kelas/presentation/pages/assignment/assignment_detail_page.dart';
 import '../features/kelas/presentation/pages/assignment/upload_file_page.dart';
+import '../features/kelas/presentation/pages/material/article_list_page.dart';
+import '../features/kelas/presentation/pages/material/article_detail_page.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -65,6 +67,11 @@ class AppRoutes {
       '/material-video': (context) => const VideoMaterialPage(),
       '/assignment-detail': (context) => const AssignmentDetailPage(),
       '/upload-file': (context) => const UploadFilePage(),
+      '/article-list': (context) => const ArticleListPage(),
+      '/article-detail': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, String>;
+          return ArticleDetailPage(article: args);
+      },
     };
   }
 }
