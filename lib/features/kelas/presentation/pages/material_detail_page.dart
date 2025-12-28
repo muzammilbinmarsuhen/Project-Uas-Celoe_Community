@@ -92,7 +92,16 @@ class _MaterialDetailPageState extends State<MaterialDetailPage> with SingleTick
 
   Widget _buildAttachmentList() {
      if (widget.material.attachments.isEmpty) {
-        return Center(child: Text("Tidak ada lampiran", style: GoogleFonts.poppins()));
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.folder_open, size: 64, color: Colors.grey[300]),
+              const SizedBox(height: 16),
+              Text("Tidak ada lampiran", style: GoogleFonts.poppins(color: Colors.grey)),
+            ],
+          )
+        );
      }
      
      return ListView.builder(
@@ -100,12 +109,52 @@ class _MaterialDetailPageState extends State<MaterialDetailPage> with SingleTick
         itemCount: widget.material.attachments.length,
         itemBuilder: (context, index) {
            final item = widget.material.attachments[index];
-           IconData icon = Icons.link;
-           Color color = Colors.blue;
-           if (item.type == 'pdf') { icon = Icons.picture_as_pdf; color = Colors.red; }
-           if (item.type == 'video') { icon = Icons.videocam; color = Colors.purple; }
+           
+           // Determine properties based on type
+           IconData icon;
+           Color color;
+           String typeLabel;
+           
+           switch (item.type.toLowerCase()) {
+             case 'pdf':
+               icon = Icons.picture_as_pdf;
+               color = const Color(0xFFD32F2F); // Red
+               typeLabel = "Dokumen PDF";
+               break;
+             case 'doc':
+             case 'docx':
+               icon = Icons.description;
+               color = const Color(0xFF2B5797); // Word Blue
+               typeLabel = "Microsoft Word";
+               break;
+             case 'ppt':
+             case 'pptx':
+               icon = Icons.slideshow;
+               color = const Color(0xFFD24726); // PowerPoint Orange
+               typeLabel = "Presentasi";
+               break;
+             case 'video':
+               icon = Icons.videocam;
+               color = const Color(0xFF00BFA5); // Teal
+               typeLabel = "Rekaman Meeting";
+               break;
+             case 'youtube':
+               icon = Icons.play_circle_fill;
+               color = const Color(0xFFFF0000); // YouTube Red
+               typeLabel = "Video Referensi";
+               break;
+             case 'link':
+             case 'article':
+               icon = Icons.article;
+               color = const Color(0xFF1976D2); // Blue
+               typeLabel = "Artikel / Jurnal";
+               break;
+             default:
+               icon = Icons.insert_drive_file;
+               color = Colors.grey;
+               typeLabel = "File";
+           }
 
-           // Staggered Entrance
            return TweenAnimationBuilder<double>(
               tween: Tween(begin: 0.0, end: 1.0),
               duration: Duration(milliseconds: 300 + (index * 100)),
@@ -121,51 +170,81 @@ class _MaterialDetailPageState extends State<MaterialDetailPage> with SingleTick
               },
               child: GestureDetector(
                 onTap: () {
-                   if (item.type == 'video') {
-                      Navigator.pushNamed(context, '/material-video');
-                   } else if (item.type == 'link') {
-                      Navigator.pushNamed(context, '/article-list');
-                   } else if (['pdf', 'ppt', 'doc'].contains(item.type)) {
+                   if (item.type == 'video' || item.type == 'youtube') {
+                      Navigator.pushNamed(context, '/material-video', arguments: {
+                        'id': 'MQ59TV2D5xU', // Pass diverse ID later
+                        'title': item.title,
+                        'isYoutube': item.type == 'youtube',
+                        'url': item.url
+                      });
+                   } else if (item.type == 'link' || item.type == 'article') {
+                      Navigator.pushNamed(context, '/article-list', arguments: {'title': item.title});
+                   } else if (['pdf', 'ppt', 'doc', 'docx', 'pptx'].contains(item.type)) {
                       Navigator.pushNamed(
                          context, 
                          '/document-viewer',
-                         arguments: {'title': item.title, 'type': item.type}
+                         arguments: {'title': item.title, 'type': item.type, 'url': item.url}
                       );
                    } else {
-                      Navigator.pushNamed(context, '/material-slide');
+                      // Fallback
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Format ${item.type} belum didukung sepenuhnya.")));
                    }
                 },
                 child: Container(
-                  margin: const EdgeInsets.only(bottom: 12),
+                  margin: const EdgeInsets.only(bottom: 16),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                      color: Colors.white,
-                     borderRadius: BorderRadius.circular(50), // Pill Shape
-                     border: Border.all(color: Colors.grey[200]!),
+                     borderRadius: BorderRadius.circular(16),
+                     boxShadow: [
+                       BoxShadow(
+                         color: Colors.black.withValues(alpha: 0.05),
+                         blurRadius: 10,
+                         offset: const Offset(0, 4),
+                       )
+                     ],
+                     border: Border.all(color: Colors.grey[100]!),
                   ),
                   child: Row(
                      children: [
                         Container(
-                           padding: const EdgeInsets.all(8),
-                           decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
-                           child: Icon(icon, color: color, size: 20),
+                           padding: const EdgeInsets.all(12),
+                           decoration: BoxDecoration(
+                             color: color.withValues(alpha: 0.1), 
+                             borderRadius: BorderRadius.circular(12)
+                           ),
+                           child: Icon(icon, color: color, size: 28),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                 Text(item.title, style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13)),
+                                 Text(
+                                   typeLabel,
+                                   style: GoogleFonts.poppins(
+                                     fontSize: 10, 
+                                     color: color, 
+                                     fontWeight: FontWeight.w600,
+                                     letterSpacing: 0.5
+                                   ), // All-caps-like label
+                                 ),
+                                 const SizedBox(height: 4),
+                                 Text(
+                                   item.title, 
+                                   style: GoogleFonts.poppins(
+                                     fontWeight: FontWeight.w600, 
+                                     fontSize: 14,
+                                     color: Colors.black87
+                                   ),
+                                   maxLines: 2,
+                                   overflow: TextOverflow.ellipsis,
+                                 ),
                               ],
                            ),
                         ),
-                        TweenAnimationBuilder<double>(
-                           tween: Tween(begin: 0.0, end: 1.0),
-                           duration: const Duration(milliseconds: 600),
-                           curve: Curves.elasticOut,
-                           builder: (context, val, child) => Transform.scale(scale: val, child: child),
-                           child: const Icon(Icons.check_circle, color: Colors.green, size: 20),
-                        ),
+                        const SizedBox(width: 8),
+                        Icon(Icons.chevron_right, color: Colors.grey[300]),
                      ],
                   ),
                 ),

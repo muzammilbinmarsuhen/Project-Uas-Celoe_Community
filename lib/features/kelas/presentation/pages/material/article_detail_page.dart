@@ -1,17 +1,99 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart'; // Import for kIsWeb
 import 'package:google_fonts/google_fonts.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
-class ArticleDetailPage extends StatelessWidget {
-  final Map<String, String> article;
+class ArticleDetailPage extends StatefulWidget {
+  const ArticleDetailPage({super.key});
 
-  const ArticleDetailPage({super.key, required this.article});
+  @override
+  State<ArticleDetailPage> createState() => _ArticleDetailPageState();
+}
+
+class _ArticleDetailPageState extends State<ArticleDetailPage> {
+  late final WebViewController _controller;
+  bool _isLoading = true;
+  String _title = 'Article Detail';
+  String _url = '';
+
+  bool _hasError = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    if (args != null) {
+       _title = args['title'] ?? 'Article Detail';
+       _url = args['url'] ?? 'https://scholar.google.com';
+       _initWebView(_url);
+    }
+  }
+
+  void _initWebView(String url) {
+    late final PlatformWebViewControllerCreationParams params;
+    if (WebViewPlatform.instance is WebKitWebViewPlatform) {
+      params = WebKitWebViewControllerCreationParams(
+        allowsInlineMediaPlayback: true,
+        mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{},
+      );
+    } else {
+      params = const PlatformWebViewControllerCreationParams();
+    }
+
+    final WebViewController controller = WebViewController.fromPlatformCreationParams(params);
+
+    controller
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0x00000000));
+
+    if (!kIsWeb) {
+      controller.setNavigationDelegate(
+        NavigationDelegate(
+          onProgress: (int progress) {},
+          onPageStarted: (String url) {
+             if (mounted) {
+               setState(() {
+                 _isLoading = true;
+                 _hasError = false;
+               });
+             }
+          },
+          onPageFinished: (String url) {
+             if (mounted) {
+               setState(() => _isLoading = false);
+             }
+          },
+          onWebResourceError: (WebResourceError error) {
+             if (mounted) {
+               setState(() {
+                  _isLoading = false;
+                  _hasError = true;
+               });
+             }
+          },
+        ),
+      );
+    } else {
+       Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) {
+            setState(() => _isLoading = false);
+          }
+       });
+    }
+
+    controller.loadRequest(Uri.parse(url));
+
+    _controller = controller;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        elevation: 1,
+        elevation: 0.5,
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.black87),
           onPressed: () => Navigator.pop(context),
@@ -20,94 +102,61 @@ class ArticleDetailPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              article['title'] ?? 'Article Detail',
+              _title,
               style: GoogleFonts.poppins(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold),
               maxLines: 1, overflow: TextOverflow.ellipsis,
             ),
             Text(
-              article['url'] ?? 'example.com',
+              _url,
               style: GoogleFonts.poppins(color: Colors.grey, fontSize: 10),
+              maxLines: 1, overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.share, color: Colors.black87),
-            onPressed: () {},
+            icon: const Icon(Icons.refresh, color: Colors.black87),
+            onPressed: () => _controller.reload(),
+            tooltip: "Muat Ulang",
           ),
           IconButton(
-            icon: const Icon(Icons.open_in_browser, color: Colors.black87),
+            icon: const Icon(Icons.share, color: Colors.black87),
             onPressed: () {},
           ),
         ],
       ),
-      body: SingleChildScrollView(
-         padding: const EdgeInsets.all(24),
-         child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-               // Mock Content mimicking a real article view
-               Text(
-                  article['title'] ?? '',
-                  style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold, height: 1.3),
-               ),
-               const SizedBox(height: 16),
-               Row(
+      body: Stack(
+         children: [
+            if (!_hasError) WebViewWidget(controller: _controller),
+            
+            if (_hasError)
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                     CircleAvatar(
-                        backgroundColor: Colors.grey[200],
-                        radius: 20,
-                        child: Text(article['author']?.substring(0, 1) ?? 'A', style: GoogleFonts.poppins(color: Colors.black)),
-                     ),
-                     const SizedBox(width: 12),
-                     Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                           Text(article['author'] ?? 'Unknown Author', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-                           Text('Published in ${article['year']}', style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey)),
-                        ],
-                     )
+                    Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
+                    const SizedBox(height: 16),
+                    Text(
+                      "Gagal memuat halaman",
+                      style: GoogleFonts.poppins(color: Colors.grey[700]),
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton.icon(
+                      onPressed: () => _controller.reload(),
+                      icon: const Icon(Icons.refresh, size: 18),
+                      label: const Text("Coba Lagi"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFA82E2E), // Maroon
+                        foregroundColor: Colors.white,
+                      ),
+                    )
                   ],
-               ),
-               const SizedBox(height: 32),
-               Text(
-                  'Abstract',
-                  style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
-               ),
-               const SizedBox(height: 8),
-               Text(
-                  article['snippet'] ?? '',
-                  style: GoogleFonts.poppins(fontSize: 16, fontStyle: FontStyle.italic, color: Colors.grey[800], height: 1.6),
-               ),
-               const SizedBox(height: 24),
-               Text(
-                  'Introduction',
-                  style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
-               ),
-               const SizedBox(height: 8),
-               Text(
-                  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-                  style: GoogleFonts.poppins(fontSize: 16, height: 1.8, color: Colors.black87),
-               ),
-               const SizedBox(height: 24),
-               Container(
-                  width: double.infinity,
-                  height: 200,
-                  color: Colors.grey[200],
-                  child: Center(child: Text('Image Placeholder', style: GoogleFonts.poppins(color: Colors.grey))),
-               ),
-               const SizedBox(height: 24),
-               Text(
-                  'Conclusion',
-                  style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
-               ),
-               const SizedBox(height: 8),
-               Text(
-                  'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.',
-                  style: GoogleFonts.poppins(fontSize: 16, height: 1.8, color: Colors.black87),
-               ),
-            ],
-         ),
+                ),
+              ),
+
+            if (_isLoading && !_hasError)
+              const Center(child: CircularProgressIndicator(color: Color(0xFFA82E2E)))
+         ],
       ),
     );
   }

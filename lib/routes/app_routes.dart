@@ -76,13 +76,14 @@ class AppRoutes {
       '/assignment-detail': (context) => const AssignmentDetailPage(),
       '/upload-file': (context) => const UploadFilePage(),
       '/article-list': (context) => const ArticleListPage(),
-      '/article-detail': (context) {
-          final args = ModalRoute.of(context)!.settings.arguments as Map<String, String>;
-          return ArticleDetailPage(article: args);
-      },
+      '/article-detail': (context) => const ArticleDetailPage(),
       '/document-viewer': (context) {
-          final args = ModalRoute.of(context)!.settings.arguments as Map<String, String>;
-          return DocumentViewerPage(title: args['title']!, type: args['type']!);
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+          return DocumentViewerPage(
+             title: args['title']!, 
+             type: args['type']!, 
+             url: args['url']
+          );
       },
       '/program-detail': (context) {
           final args = ModalRoute.of(context)!.settings.arguments as dynamic;

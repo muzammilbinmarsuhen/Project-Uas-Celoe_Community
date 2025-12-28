@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+import 'package:video_player/video_player.dart';
 import '../../../data/dummy_course_data.dart';
 
 class VideoMaterialPage extends StatefulWidget {
@@ -11,20 +12,40 @@ class VideoMaterialPage extends StatefulWidget {
 }
 
 class _VideoMaterialPageState extends State<VideoMaterialPage> {
-  late YoutubePlayerController _controller;
+  // YouTube Controller
+  late YoutubePlayerController _ytController;
+  
+  // Generic Video Controller
+  VideoPlayerController? _videoController;
+
   final ScrollController _scrollController = ScrollController();
   
   // Current Video State
   String _currentTitle = 'User Interface Design For Beginner';
+  bool _isYoutube = true;
 
   @override
-  void initState() {
-    super.initState();
-    _initController('MQ59TV2D5xU');
+  void didChangeDependencies() {
+     super.didChangeDependencies();
+     // Extract args if passed
+     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+     if (args != null) {
+        _currentTitle = args['title'] ?? _currentTitle;
+        if (args['isYoutube'] == false) {
+           _initGenericVideo(args['url']);
+        } else {
+           _initYoutube(args['id'] ?? 'MQ59TV2D5xU');
+        }
+     } else {
+        _initYoutube('MQ59TV2D5xU');
+     }
   }
 
-  void _initController(String videoId) {
-    _controller = YoutubePlayerController.fromVideoId(
+  void _initYoutube(String videoId) {
+    _isYoutube = true;
+    _disposeGeneric();
+    
+    _ytController = YoutubePlayerController.fromVideoId(
       videoId: videoId,
       autoPlay: false,
       params: const YoutubePlayerParams(
@@ -33,28 +54,58 @@ class _VideoMaterialPageState extends State<VideoMaterialPage> {
         strictRelatedVideos: true,
       ),
     );
+    setState(() {});
   }
 
-  void _changeVideo(String videoId, String title) async {
+  void _initGenericVideo(String url) {
+     _isYoutube = false;
+     // If we had a YT controller, we don't necessarily need to dispose it if we want to cache, 
+     // but for simplicity let's rely on re-creation or just pause it. 
+     // Actually the library recommends closing.
+     try { _ytController.close(); } catch (_) {}
+
+     _videoController = VideoPlayerController.networkUrl(Uri.parse(url))
+       ..initialize().then((_) {
+          setState(() {});
+          _videoController!.play();
+       });
+  }
+
+  void _disposeGeneric() {
+     _videoController?.dispose();
+     _videoController = null;
+  }
+
+  void _changeVideo(String idOrUrl, String title, bool isYoutube) async {
      // 1. Scroll to top
      if (_scrollController.hasClients) {
         _scrollController.animateTo(0, duration: const Duration(milliseconds: 500), curve: Curves.easeOut);
      }
      
      // 2. Load Video
-     _controller.loadVideoById(videoId: videoId);
+     if (isYoutube) {
+        if (!_isYoutube) {
+           _initYoutube(idOrUrl);
+        } else {
+           _ytController.loadVideoById(videoId: idOrUrl);
+        }
+     } else {
+        _initGenericVideo(idOrUrl);
+     }
      
      // 3. Update Title (AppBar)
      if (mounted) {
         setState(() {
            _currentTitle = title;
+           _isYoutube = isYoutube;
         });
      }
   }
 
   @override
   void dispose() {
-    _controller.close();
+    try { _ytController.close(); } catch (_) {}
+    _videoController?.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -62,7 +113,7 @@ class _VideoMaterialPageState extends State<VideoMaterialPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB), // Very light grey background
+      backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
         backgroundColor: const Color(0xFFA82E2E),
         leading: IconButton(
@@ -80,45 +131,71 @@ class _VideoMaterialPageState extends State<VideoMaterialPage> {
         controller: _scrollController,
         physics: const BouncingScrollPhysics(),
         children: [
-           // 1. VIDEO PLAYER (Top)
+           // 1. VIDEO PLAYER AREA
            Container(
              color: Colors.black,
-             child: YoutubePlayer(
-               controller: _controller,
-               aspectRatio: 16 / 9,
+             height: 250, // Fixed height for consistency
+             width: double.infinity,
+             child: Center(
+                child: _isYoutube 
+                  ? YoutubePlayer(controller: _ytController, aspectRatio: 16 / 9)
+                  : (_videoController != null && _videoController!.value.isInitialized)
+                      ? AspectRatio(
+                          aspectRatio: _videoController!.value.aspectRatio,
+                          child: Stack(
+                            alignment: Alignment.bottomCenter,
+                            children: [
+                               VideoPlayer(_videoController!),
+                               VideoProgressIndicator(_videoController!, allowScrubbing: true, colors: const VideoProgressColors(playedColor: Colors.red)),
+                               // Simple Play/Pause Overlay
+                               GestureDetector(
+                                  onTap: () {
+                                     setState(() {
+                                        _videoController!.value.isPlaying ? _videoController!.pause() : _videoController!.play();
+                                     });
+                                  },
+                                  child: Center(
+                                     child: Icon(
+                                        _videoController!.value.isPlaying ? Icons.pause : Icons.play_arrow,
+                                        color: Colors.white.withValues(alpha: 0.5),
+                                        size: 50
+                                     )
+                                  ),
+                               )
+                            ],
+                          ),
+                        )
+                      : const CircularProgressIndicator(color: Colors.white),
              ),
            ),
 
-           // 2. "Video Lain Nya" Header
+           // 2. HEADER
            Padding(
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
               child: Text(
-                 "Video Lain Nya",
+                 "Materi Video Lainnya",
                  style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
               ),
            ),
 
-           // 3. Main List (Combined Recommendation + AI for unified look)
+           // 3. LIST
            ...DummyCourseData.relatedVideos.asMap().entries.map((entry) {
-              return _buildVideoItem(entry.value, entry.key, false);
+              return _buildVideoItem(entry.value, entry.key);
            }),
-           ...DummyCourseData.aiRecommendations.asMap().entries.map((entry) {
-              return _buildVideoItem(entry.value, entry.key + DummyCourseData.relatedVideos.length, true);
-           }),
-
            const SizedBox(height: 40),
         ],
       ),
     );
   }
 
-  Widget _buildVideoItem(Map<String, String> video, int index, bool isAI) {
+  Widget _buildVideoItem(Map<String, String> video, int index) {
      return _AnimatedVideoCard(
         video: video,
         index: index,
         onTap: () => _changeVideo(
            video['id'] ?? '', 
            video['title'] ?? '',
+           true // Assuming related videos in dummy data are YT for now, or check URL structure
         ),
      );
   }

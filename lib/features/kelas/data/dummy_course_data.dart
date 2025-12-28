@@ -74,11 +74,12 @@ class DummyCourseData {
       subtitle: '3 URLs, 5 Files, 3 Interactive Content',
       isCompleted: true,
       attachments: [
-        AttachmentItem(title: 'Slide Presentasi PDF', type: 'pdf', url: '#'),
-        AttachmentItem(title: 'Rekaman Zoom Meeting', type: 'video', url: '#'),
-        AttachmentItem(title: 'Referensi Artikel Medium', type: 'link', url: '#'),
-        AttachmentItem(title: 'Materi Word Document', type: 'doc', url: '#'),
-        AttachmentItem(title: 'Slide PowerPoint (PPT)', type: 'ppt', url: '#'),
+        AttachmentItem(title: 'Panduan Praktikum (DOC)', type: 'doc', url: 'https://file-examples.com/storage/fe5944f77c636eb0e318d19/2017/02/file-sample_100kB.docx'),
+        AttachmentItem(title: 'Slide Presentasi (PPT) - Animasi', type: 'ppt', url: 'https://file-examples.com/storage/fe5944f77c636eb0e318d19/2017/02/file_example_PPT_250kB.ppt'),
+        AttachmentItem(title: 'Modul Pembelajaran (PDF)', type: 'pdf', url: 'https://pdfobject.com/pdf/sample.pdf'),
+        AttachmentItem(title: 'Rekaman Zoom Meeting', type: 'video', url: 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4'),
+        AttachmentItem(title: 'Referensi Artikel (Google Scholar)', type: 'link', url: 'https://scholar.google.com/scholar?q=user+interface+design'),
+        AttachmentItem(title: 'Video Referensi YouTube', type: 'youtube', url: 'https://www.youtube.com/watch?v=MQ59TV2D5xU'),
       ],
     ),
     MaterialItem(
