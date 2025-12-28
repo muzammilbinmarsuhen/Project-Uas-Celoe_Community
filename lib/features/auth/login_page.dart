@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'help_page.dart';
 import '../../routes/app_routes.dart';
 import '../../core/widgets/custom_text_field.dart';
 import 'auth_controller.dart';
@@ -54,6 +56,16 @@ class _LoginPageState extends ConsumerState<LoginPage> with SingleTickerProvider
       );
       return;
     }
+
+    final prefs = await SharedPreferences.getInstance();
+    
+    // 1. Check if First Access exists
+    if (!prefs.containsKey('first_access')) {
+      await prefs.setString('first_access', DateTime.now().toIso8601String());
+    }
+    
+    // 2. Always update Last Access
+    await prefs.setString('last_access', DateTime.now().toIso8601String());
 
     // Call AuthController
     await ref.read(authControllerProvider.notifier).login(email, password);
@@ -237,6 +249,37 @@ class _LoginPageState extends ConsumerState<LoginPage> with SingleTickerProvider
                             ),
                          ),
                       ],
+                   ),
+                   const SizedBox(height: 24),
+                   
+                   // Bantuan Feature
+                   TextButton.icon(
+                      onPressed: () {
+                         Navigator.of(context).push(
+                            PageRouteBuilder(
+                               pageBuilder: (context, animation, secondaryAnimation) => const HelpPage(),
+                               transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                  // Fade In
+                                  final fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+                                     CurvedAnimation(parent: animation, curve: Curves.easeOut)
+                                  );
+                                  // Slide Up
+                                  final slideAnimation = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
+                                     CurvedAnimation(parent: animation, curve: Curves.easeOut)
+                                  );
+                                  
+                                  return FadeTransition(
+                                     opacity: fadeAnimation,
+                                     child: SlideTransition(position: slideAnimation, child: child),
+                                  );
+                               },
+                               transitionDuration: const Duration(milliseconds: 300),
+                               reverseTransitionDuration: const Duration(milliseconds: 300),
+                            ),
+                         );
+                      },
+                      icon: const Icon(Icons.help_outline, size: 18, color: Colors.grey),
+                      label: Text('Bantuan ?', style: GoogleFonts.poppins(color: Colors.grey, decoration: TextDecoration.underline)),
                    ),
                    const SizedBox(height: 20),
                 ],

@@ -49,6 +49,13 @@ class ProfileController extends Notifier<ProfileState> {
     // Ideally we would load full object from JSON string if we stored it
     // For now, we update the basic info we have
     
+    // Load Timestamps
+    final firstAccessStr = prefs.getString('first_access');
+    final lastAccessStr = prefs.getString('last_access');
+    
+    final firstAccess = firstAccessStr != null ? DateTime.parse(firstAccessStr) : DateTime.now();
+    final lastAccess = lastAccessStr != null ? DateTime.parse(lastAccessStr) : DateTime.now();
+    
     state = state.copyWith(
       isLoading: false,
       user: UserModel(
@@ -61,8 +68,8 @@ class ProfileController extends Notifier<ProfileState> {
         description: prefs.getString('description') ?? 'Mahasiswa Telkom University',
         faculty: prefs.getString('faculty') ?? 'Fakultas Informatika',
         studyProgram: prefs.getString('studyProgram') ?? 'S1 Rekayasa Perangkat Lunak',
-        firstAccess: DateTime(2023, 8, 20),
-        lastAccess: DateTime.now(),
+        firstAccess: firstAccess,
+        lastAccess: lastAccess,
         // Check if there is a saved photo path
         photoPath: prefs.getString('profile_photo_path'),
       ),
