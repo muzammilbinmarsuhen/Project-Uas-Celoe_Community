@@ -113,46 +113,38 @@ class _MaterialDetailPageState extends State<MaterialDetailPage> with SingleTick
            // Determine properties based on type
            IconData icon;
            Color color;
-           String typeLabel;
            
            switch (item.type.toLowerCase()) {
              case 'pdf':
                icon = Icons.picture_as_pdf;
                color = const Color(0xFFD32F2F); // Red
-               typeLabel = "Dokumen PDF";
                break;
              case 'doc':
              case 'docx':
                icon = Icons.description;
                color = const Color(0xFF2B5797); // Word Blue
-               typeLabel = "Microsoft Word";
                break;
              case 'ppt':
              case 'pptx':
                icon = Icons.slideshow;
                color = const Color(0xFFD24726); // PowerPoint Orange
-               typeLabel = "Presentasi";
                break;
              case 'video':
                icon = Icons.videocam;
                color = const Color(0xFF00BFA5); // Teal
-               typeLabel = "Rekaman Meeting";
                break;
              case 'youtube':
                icon = Icons.play_circle_fill;
                color = const Color(0xFFFF0000); // YouTube Red
-               typeLabel = "Video Referensi";
                break;
              case 'link':
              case 'article':
                icon = Icons.article;
                color = const Color(0xFF1976D2); // Blue
-               typeLabel = "Artikel / Jurnal";
                break;
              default:
                icon = Icons.insert_drive_file;
                color = Colors.grey;
-               typeLabel = "File";
            }
 
            return TweenAnimationBuilder<double>(
@@ -220,16 +212,7 @@ class _MaterialDetailPageState extends State<MaterialDetailPage> with SingleTick
                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                 Text(
-                                   typeLabel,
-                                   style: GoogleFonts.poppins(
-                                     fontSize: 10, 
-                                     color: color, 
-                                     fontWeight: FontWeight.w600,
-                                     letterSpacing: 0.5
-                                   ), // All-caps-like label
-                                 ),
-                                 const SizedBox(height: 4),
+
                                  Text(
                                    item.title, 
                                    style: GoogleFonts.poppins(

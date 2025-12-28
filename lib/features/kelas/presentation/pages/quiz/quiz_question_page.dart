@@ -53,8 +53,8 @@ class _QuizQuestionPageState extends State<QuizQuestionPage> {
     final questions = DummyCourseData.quizQuestions;
     final currentQuestion = questions[_currentIndex];
 
-    // Mocking 15 indicators as requested, even if we assume 5 questions for now to avoid crash
-    final indicatorCount = 15;
+    // Use actual question length for indicators
+    final indicatorCount = questions.length;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
@@ -284,8 +284,81 @@ class _QuizQuestionPageState extends State<QuizQuestionPage> {
                    else
                       ElevatedButton.icon(
                          onPressed: () {
-                             // Confirm Finish
-                             Navigator.pushReplacementNamed(context, '/quiz-review'); // Go to review
+                             // Validation: Ensure current question is answered
+                             if (!_selectedAnswers.containsKey(_currentIndex)) {
+                                 ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text('Silahkan jawab soal nomor ${_currentIndex + 1} ini terlebih dahulu!', style: GoogleFonts.poppins(color: Colors.white)), 
+                                        backgroundColor: const Color(0xffB74B4B)
+                                    )
+                                 );
+                                 return;
+                             }
+
+                             // Processing Function
+                             void processSubmission() {
+                                 int correct = 0;
+                                 int wrong = 0;
+                                 
+                                 for (int i = 0; i < questions.length; i++) {
+                                     final q = questions[i];
+                                     final selectedId = _selectedAnswers[i];
+                                     
+                                     // Find correct option ID safely
+                                     String correctOptionId = '';
+                                     try {
+                                       correctOptionId = q.options.firstWhere((o) => o.isCorrect).id;
+                                     } catch (e) {
+                                       // No correct option defined in data
+                                     }
+                                                   
+                                     if (selectedId == correctOptionId) {
+                                         correct++;
+                                     } else {
+                                         wrong++;
+                                     }
+                                 }
+                                 
+                                 double score = 0;
+                                 if (questions.isNotEmpty) {
+                                   score = (correct / questions.length) * 100;
+                                 }
+                                 
+                                 Navigator.pushReplacementNamed(
+                                     context, 
+                                     '/quiz-review', 
+                                     arguments: {
+                                         'score': score,
+                                         'correct': correct,
+                                         'wrong': wrong,
+                                         'total': questions.length,
+                                         'answers': _selectedAnswers
+                                     }
+                                 );
+                             }
+
+                             // Check for incomplete answers elsewhere
+                             if (_selectedAnswers.length < questions.length) {
+                                  showDialog(
+                                      context: context,
+                                      builder: (ctx) => AlertDialog(
+                                          title: Text('Konfirmasi', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+                                          content: Text('Masih ada soal yang belum dijawab. Yakin ingin mengumpulkan?', style: GoogleFonts.poppins(fontSize: 13)),
+                                          actions: [
+                                              TextButton(child: const Text('Periksa Kembali'), onPressed: () => Navigator.pop(ctx)),
+                                              TextButton(
+                                                  child: const Text('Kumpulkan'), 
+                                                  onPressed: () { 
+                                                      Navigator.pop(ctx); 
+                                                      processSubmission(); 
+                                                  }
+                                              )
+                                          ],
+                                      )
+                                  );
+                             } else {
+                                 processSubmission();
+                             }
                          },
                          icon: const Icon(Icons.check_circle, size: 16, color: Colors.white),
                          label: Text('Selesai', style: GoogleFonts.poppins(color: Colors.white)),

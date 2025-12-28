@@ -15,11 +15,11 @@ class ArticleListPage extends StatelessWidget {
         'title': 'The Principles of User Interface Design',
         'author': 'J. Nielsen',
         'year': '2023',
-        'source': 'example.com',
+        'source': 'nngroup.com',
         'snippet': 'This paper discusses the fundamental heuristics of user interface design, focusing on usability and efficiency. It covers 10 general principles for interaction design...',
-        'url': 'https://scholar.google.com/scholar?q=principles+of+ui+design',
-        'pdfUrl': 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', // Public dummy PDF
-        'docUrl': 'https://s29.q4cdn.com/175625835/files/doc_downloads/test.docx', // Public dummy DOC
+        'url': 'https://en.wikipedia.org/wiki/User_interface_design',
+        'pdfUrl': 'https://pdfobject.com/pdf/sample.pdf', 
+        'docUrl': 'https://filesamples.com/samples/document/doc/sample2.doc',
       },
       {
         'title': 'Mobile First: A Strategy for Design',
@@ -27,7 +27,7 @@ class ArticleListPage extends StatelessWidget {
         'year': '2022',
         'source': 'uxdesign.cc',
         'snippet': 'Exploring the shift towards mobile-first design strategies and their impact on responsive web development. The mobile-first approach is not just about screen size...',
-        'url': 'https://scholar.google.com/scholar?q=mobile+first+design',
+        'url': 'https://en.wikipedia.org/wiki/Responsive_web_design',
         'pdfUrl': 'https://pdfobject.com/pdf/sample.pdf',
       },
       {
@@ -36,8 +36,8 @@ class ArticleListPage extends StatelessWidget {
         'year': '2024',
         'source': 'color-research.org',
         'snippet': 'An in-depth analysis of how color perception affects user engagement and conversion rates in digital products. Understanding color psychology is crucial for...',
-        'url': 'https://scholar.google.com/scholar?q=color+theory',
-        'docUrl': 'https://file-examples.com/storage/fe5944f77c636eb0e318d19/2017/02/file-sample_100kB.docx',
+        'url': 'https://en.wikipedia.org/wiki/Color_theory',
+        'docUrl': 'https://filesamples.com/samples/document/doc/sample2.doc',
       },
       {
         'title': 'Accessibility Guidelines for Modern UI',
@@ -46,7 +46,7 @@ class ArticleListPage extends StatelessWidget {
         'source': 'w3.org',
         'snippet': 'A comprehensive guide to WCAG 2.1 compliance and ensuring digital inclusivity for all users. This standard covers success criteria for web content accessibility...',
         'url': 'https://www.w3.org/WAI/standards-guidelines/wcag/',
-        'pdfUrl': 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+        'pdfUrl': 'https://pdfobject.com/pdf/sample.pdf',
       },
       {
         'title': 'Understanding Flutter Architecture',
@@ -54,7 +54,7 @@ class ArticleListPage extends StatelessWidget {
         'year': '2023',
         'source': 'flutter.dev',
         'snippet': 'Flutter uses an aggressive composition model. Widgets are the basic building blocks of a Flutter app user interface. Each widget is an immutable declaration of part of the user interface.',
-        'url': 'https://flutter.dev/docs',
+        'url': 'https://docs.flutter.dev/resources/architectural-overview',
       },
     ];
 
@@ -84,9 +84,10 @@ class ArticleListPage extends StatelessWidget {
                // Title Link
                InkWell(
                   onTap: () {
-                     // Navigate to Article Detail (WebView)
-                     Navigator.pushNamed(context, '/article-detail', arguments: {
+                     // Navigate to Document Viewer (WebView) for the main link
+                     Navigator.pushNamed(context, '/document-viewer', arguments: {
                         'title': article['title'],
+                        'type': 'link', // Treat as web link
                         'url': article['url']
                      });
                   },

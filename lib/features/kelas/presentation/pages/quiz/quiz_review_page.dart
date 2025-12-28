@@ -7,18 +7,26 @@ class QuizReviewPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Retrieve arguments with safe casting
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+    final double score = (args['score'] as num?)?.toDouble() ?? 0.0;
+    final int correct = args['correct'] ?? 0;
+    final int wrong = args['wrong'] ?? 0;
+    final int total = args['total'] ?? 0;
+    final Map<int, String> answers = args['answers'] ?? {};
+
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
         backgroundColor: const Color(0xffB74B4B),
         title: Text(
-          'Review Jawaban',
+          'Hasil Quiz',
           style: GoogleFonts.poppins(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
         ),
         elevation: 0,
         leading: IconButton(
            icon: const Icon(Icons.close, color: Colors.white),
-           onPressed: () => Navigator.pop(context), // Typically would go back to overview or class
+           onPressed: () => Navigator.pop(context), 
         ),
       ),
       body: SingleChildScrollView(
@@ -38,17 +46,24 @@ class QuizReviewPage extends StatelessWidget {
                   child: Column(
                      children: [
                         Row(
-                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                            children: [
-                              _buildResultInfo('Mulai', '08:00'),
-                              _buildResultInfo('Selesai', '08:14'),
-                              _buildResultInfo('Durasi', '14m 12s'),
+                              _buildResultInfo('Benar', '$correct', Colors.green),
+                              _buildResultInfo('Salah', '$wrong', Colors.red),
+                              _buildResultInfo('Total', '$total', Colors.black87),
                            ],
                         ),
                         const Divider(height: 30),
                         Text('Nilai Kamu', style: GoogleFonts.poppins(color: Colors.grey[600], fontSize: 13)),
                         const SizedBox(height: 4),
-                        Text('85.00', style: GoogleFonts.poppins(fontSize: 32, fontWeight: FontWeight.bold, color: const Color(0xffB74B4B))),
+                        Text(
+                            score.toStringAsFixed(0), 
+                            style: GoogleFonts.poppins(
+                                fontSize: 48, 
+                                fontWeight: FontWeight.bold, 
+                                color: score >= 70 ? Colors.green : const Color(0xffB74B4B)
+                            )
+                        ),
                         Text('/ 100', style: GoogleFonts.poppins(color: Colors.grey, fontSize: 12)),
                      ],
                   ),
@@ -59,8 +74,12 @@ class QuizReviewPage extends StatelessWidget {
                ...DummyCourseData.quizQuestions.asMap().entries.map((entry) {
                   final index = entry.key;
                   final question = entry.value;
-                  // Mock answers: odd correct, even incorrect
-                  final isCorrect = index % 2 == 0; 
+                  
+                  // Check correctness
+                  final selectedId = answers[index];
+                  final correctOption = question.options.firstWhere((o) => o.isCorrect, orElse: () => QuizOption(id: '', text: '', isCorrect: false));
+                  final isCorrect = selectedId == correctOption.id;
+                  final isSkipped = selectedId == null;
                   
                   return Container(
                      margin: const EdgeInsets.only(bottom: 16),
@@ -76,22 +95,18 @@ class QuizReviewPage extends StatelessWidget {
                            Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                 Text('Soal ${index + 1}', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 13, color: const Color(0xffB74B4B))),
-                                 TextButton(
-                                    onPressed: () {
-                                       // In backend app this would go to Question Page in ReadOnly mode.
-                                       // Here just show a snackbar
-                                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lihat detail soal ${index + 1}')));
-                                    },
-                                    child: Text('Lihat Soal', style: GoogleFonts.poppins(fontSize: 12, color: Colors.blue)),
+                                 Text('Soal ${index + 1}', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87)),
+                                 Icon(
+                                    isCorrect ? Icons.check_circle : (isSkipped ? Icons.warning : Icons.cancel),
+                                    color: isCorrect ? Colors.green : (isSkipped ? Colors.orange : Colors.red),
+                                    size: 20
                                  )
                               ],
                            ),
                            const SizedBox(height: 8),
                            Text(
-                              question.text,
-                              style: GoogleFonts.poppins(fontSize: 14, color: Colors.black87),
-                              maxLines: 2, overflow: TextOverflow.ellipsis,
+                               question.text,
+                               style: GoogleFonts.poppins(fontSize: 14, color: Colors.black87),
                            ),
                            const SizedBox(height: 12),
                            Container(
@@ -102,16 +117,29 @@ class QuizReviewPage extends StatelessWidget {
                               ),
                               child: Row(
                                  children: [
-                                    Icon(
-                                       isCorrect ? Icons.check_circle : Icons.cancel,
-                                       color: isCorrect ? Colors.green : Colors.red,
-                                       size: 18,
-                                    ),
                                     const SizedBox(width: 8),
                                     Expanded(
-                                       child: Text(
-                                          'Jawaban tersimpan',
-                                          style: GoogleFonts.poppins(fontSize: 12, color: isCorrect ? Colors.green[800] : Colors.red[800], fontWeight: FontWeight.w500),
+                                       child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                              Text(
+                                                 isCorrect 
+                                                     ? 'Jawaban Benar' 
+                                                     : (isSkipped ? 'Tidak Dijawab' : 'Jawaban Salah'),
+                                                 style: GoogleFonts.poppins(
+                                                     fontSize: 12, 
+                                                     color: isCorrect ? Colors.green[800] : Colors.red[800], 
+                                                     fontWeight: FontWeight.w500
+                                                 ),
+                                              ),
+                                              if (!isCorrect && !isSkipped) ...[
+                                                 const SizedBox(height: 4),
+                                                 Text(
+                                                    'Jawaban Benar: ${correctOption.id}. ${correctOption.text}',
+                                                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.green[800]),
+                                                 )
+                                              ]
+                                          ]
                                        ),
                                     )
                                  ],
@@ -132,45 +160,38 @@ class QuizReviewPage extends StatelessWidget {
                BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, -4))
             ] 
          ),
-         child: ElevatedButton(
-            onPressed: () {
-               // Success Animation Logic
-               showDialog(context: context, builder: (ctx) => AlertDialog(
-                  content: Column(
-                     mainAxisSize: MainAxisSize.min,
-                     children: [
-                        const Icon(Icons.check_circle_outline, color: Colors.green, size: 80),
-                        const SizedBox(height: 16),
-                        Text('Sukses!', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18)),
-                        const SizedBox(height: 8),
-                        Text('Jawaban berhasil dikirim.', style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey)),
-                     ],
-                  ),
-                  actions: [
-                     TextButton(child: const Text('OK'), onPressed: () {
-                        Navigator.pop(ctx); // Close dialog
-                        Navigator.pop(context); // Close review page -> Back to Overview
-                     })
-                  ],
-               ));
-            },
-            style: ElevatedButton.styleFrom(
-               backgroundColor: Colors.green,
-               minimumSize: const Size(double.infinity, 50),
-               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
-            ),
-            child: Text('Kirim Jawaban', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+         child: Column(
+           mainAxisSize: MainAxisSize.min,
+           children: [
+             ElevatedButton(
+               onPressed: () {
+                  // Retake Quiz -> Reset by replacing route with quiz start
+                  Navigator.pushReplacementNamed(context, '/quiz-start');
+               },
+               style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xffB74B4B),
+                  minimumSize: const Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
+               ),
+               child: Text('Ulangi Quiz', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+             ),
+             const SizedBox(height: 12),
+             TextButton(
+               onPressed: () => Navigator.pop(context), // Back to prev
+               child: Text('Kembali ke Materi', style: GoogleFonts.poppins(color: Colors.grey[700])),
+             )
+           ],
          ),
       ),
     );
   }
 
-  Widget _buildResultInfo(String label, String value) {
+  Widget _buildResultInfo(String label, String value, Color valueColor) {
      return Column(
         children: [
-           Text(label, style: GoogleFonts.poppins(fontSize: 11, color: Colors.grey[600])),
+           Text(label, style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600])),
            const SizedBox(height: 4),
-           Text(value, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87)),
+           Text(value, style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: valueColor)),
         ],
      );
   }

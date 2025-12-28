@@ -106,12 +106,19 @@ class _DocumentViewerPageState extends State<DocumentViewerPage> {
     // Logic for Viewer URL
     String finalUrl = widget.url ?? '';
     
-    if (['doc', 'docx', 'ppt', 'pptx'].contains(widget.type.toLowerCase())) {
-       // Microsoft Office Viewer
-       finalUrl = 'https://view.officeapps.live.com/op/view.aspx?src=${widget.url}';
-    } else if (widget.type.toLowerCase() == 'pdf') {
-       // Google Docs Viewer for PDF to avoid auto-download and enable online reading
-       finalUrl = 'https://docs.google.com/viewer?url=${widget.url}&embedded=true';
+    // Check if it's an Office file or PDF that needs an external viewer in WebView
+    final fileType = widget.type.toLowerCase();
+    if (['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'].contains(fileType)) {
+       // Use Google Docs Viewer for Office files
+       // Must encode the URL parameter
+       if (widget.url != null && widget.url!.isNotEmpty) {
+         finalUrl = 'https://docs.google.com/viewer?url=${Uri.encodeComponent(widget.url!)}&embedded=true';
+       }
+    } else if (fileType == 'pdf') {
+       // Also use Google Docs Viewer for PDF to ensure cross-platform compatibility without native PDF support
+       if (widget.url != null && widget.url!.isNotEmpty) {
+         finalUrl = 'https://docs.google.com/viewer?url=${Uri.encodeComponent(widget.url!)}&embedded=true';
+       }
     } 
     else if (!finalUrl.startsWith('http')) {
        finalUrl = 'https://google.com'; 
