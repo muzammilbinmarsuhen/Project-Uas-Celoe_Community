@@ -184,10 +184,74 @@ class DummyCourseData {
     'Accessibility: Desain harus dapat diakses oleh semua orang, termasuk pengguna dengan keterbatasan.',
   ];
   
-  // Dummy Related Videos
+  // Dummy Related Videos (Curated for High Quality)
   static final List<Map<String, String>> relatedVideos = [
-     {'title': 'Prinsip Dasar UX Design', 'duration': '10:05'},
-     {'title': 'Tutorial Figma untuk Pemula', 'duration': '14:20'},
-     {'title': 'Color Theory dalam UI', 'duration': '08:45'},
+     {
+        'id': 'c9Wg6Cb_YlU',
+        'title': 'UX Design Course for Beginners',
+        'author': 'freeCodeCamp.org',
+        'views': '2.1M views',
+        'duration': '2:05:00',
+        'thumb': 'https://img.youtube.com/vi/c9Wg6Cb_YlU/0.jpg'
+     },
+     {
+        'id': 'zHAa-ashNAE',
+        'title': 'Figma Tutorial for UI Design',
+        'author': 'Envato Tuts+',
+        'views': '1.5M views',
+        'duration': '45:20',
+        'thumb': 'https://img.youtube.com/vi/zHAa-ashNAE/0.jpg'
+     },
+     {
+        'id': 'Bi2j5qI7f7g',
+        'title': 'Color Theory Basics',
+        'author': 'GCFLearnFree',
+        'views': '800K views',
+        'duration': '06:30',
+        'thumb': 'https://img.youtube.com/vi/Bi2j5qI7f7g/0.jpg'
+     },
+     {
+        'id': 'Sw_1qDba3-Y',
+        'title': 'Typography for Developers',
+        'author': 'DesignCourse',
+        'views': '400K views',
+        'duration': '12:15',
+        'thumb': 'https://img.youtube.com/vi/Sw_1qDba3-Y/0.jpg'
+     },
+     {
+        'id': 'XTwZ8n04Asw',
+        'title': 'Building a Design System',
+        'author': 'Figma',
+        'views': '300K views',
+        'duration': '18:40',
+        'thumb': 'https://img.youtube.com/vi/XTwZ8n04Asw/0.jpg'
+     },
+  ];
+
+  static final List<Map<String, String>> aiRecommendations = [
+     {
+        'id': 'vN38HjM8', // Fake ID or Real
+        'title': 'AI Explainer: Dasar UI Design',
+        'author': 'Celoe AI',
+        'views': 'Generated',
+        'duration': '05:00',
+        'thumb': 'https://img.youtube.com/vi/c9Wg6Cb_YlU/maxresdefault.jpg' // Reusing valid thumb for visual
+     },
+     {
+        'id': 'ux_ai_02',
+        'title': 'AI Video: UX vs UI',
+        'author': 'Celoe AI',
+        'views': 'Generated',
+        'duration': '03:45',
+        'thumb': 'https://img.youtube.com/vi/zHAa-ashNAE/maxresdefault.jpg'
+     },
+     {
+        'id': 'visual_h_ai',
+        'title': 'AI Learning Video: Visual Hierarchy',
+        'author': 'Celoe AI',
+        'views': 'Generated',
+        'duration': '04:20',
+        'thumb': 'https://img.youtube.com/vi/Bi2j5qI7f7g/maxresdefault.jpg'
+     },
   ];
 }

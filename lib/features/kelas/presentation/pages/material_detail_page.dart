@@ -111,10 +111,13 @@ class _MaterialDetailPageState extends State<MaterialDetailPage> with SingleTick
               duration: Duration(milliseconds: 300 + (index * 100)),
               curve: Curves.easeOutBack,
               builder: (context, value, child) {
-                 return Transform.scale(
-                    scale: value,
-                    child: Opacity(opacity: value, child: child),
-                 );
+                  return Transform.scale(
+                     scale: value,
+                     child: Opacity(
+                        opacity: value.clamp(0.0, 1.0), 
+                        child: child
+                     ),
+                  );
               },
               child: GestureDetector(
                 onTap: () {
