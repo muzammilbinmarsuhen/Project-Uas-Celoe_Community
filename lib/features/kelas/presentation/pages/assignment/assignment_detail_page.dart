@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
+import '../../../data/dummy_course_data.dart';
 import 'dart:math';
 
 class AssignmentDetailPage extends StatefulWidget {
@@ -13,7 +14,12 @@ class AssignmentDetailPage extends StatefulWidget {
 class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
   // Stats
   List<PlatformFile> _files = [];
-  bool _isSubmitted = false;
+  
+  // Getter to fetch the shared task state directly
+  // In a real app, this would be passed via constructor or provider
+  TaskItem get _task => DummyCourseData.tasks.firstWhere((t) => t.id == 't1');
+
+  bool get _isSubmitted => _task.isCompleted;
 
   void _navigateToUpload() async {
     final result = await Navigator.pushNamed(context, '/upload-file');
@@ -36,7 +42,22 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFA82E2E)),
                  onPressed: () {
                     Navigator.pop(ctx);
-                    setState(() => _isSubmitted = true);
+                    setState(() {
+                      // Update Shared State
+                      final taskIndex = DummyCourseData.tasks.indexWhere((t) => t.id == 't1');
+                      if (taskIndex != -1) {
+                        // Create new TaskItem with updated status (immutable style copy)
+                        final oldTask = DummyCourseData.tasks[taskIndex];
+                        DummyCourseData.tasks[taskIndex] = TaskItem(
+                          id: oldTask.id,
+                          title: oldTask.title,
+                          type: oldTask.type,
+                          deadline: oldTask.deadline,
+                          instruction: oldTask.instruction,
+                          isCompleted: true, // Mark as completed
+                        );
+                      }
+                    });
                     ScaffoldMessenger.of(context).showSnackBar(
                        const SnackBar(content: Text("Tugas berhasil diserahkan!"), backgroundColor: Colors.green)
                     );
@@ -47,6 +68,7 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
         )
      );
   }
+
 
   String _formatSize(int bytes) {
     if (bytes <= 0) return "0 B";
@@ -251,7 +273,20 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
            child: OutlinedButton(
               onPressed: () {
                  // Logic to cancel submission
-                 setState(() => _isSubmitted = false);
+                 setState(() {
+                      final taskIndex = DummyCourseData.tasks.indexWhere((t) => t.id == 't1');
+                      if (taskIndex != -1) {
+                         final oldTask = DummyCourseData.tasks[taskIndex];
+                         DummyCourseData.tasks[taskIndex] = TaskItem(
+                            id: oldTask.id,
+                            title: oldTask.title,
+                            type: oldTask.type,
+                            deadline: oldTask.deadline,
+                            instruction: oldTask.instruction,
+                            isCompleted: false, // Reset to false
+                         );
+                      }
+                 });
               },
               style: OutlinedButton.styleFrom(
                  padding: const EdgeInsets.symmetric(vertical: 16),

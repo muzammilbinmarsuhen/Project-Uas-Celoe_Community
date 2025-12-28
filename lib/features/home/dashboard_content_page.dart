@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/data/dummy_data.dart';
+import '../kelas/data/dummy_course_data.dart';
 import 'widgets/header_widget.dart'; // Wait, widgets are in features/home/widgets? Yes.
 import 'widgets/announcement_carousel_widget.dart';
 import 'widgets/course_progress_card_widget.dart';
@@ -187,6 +188,10 @@ class _DashboardContentPageState extends ConsumerState<DashboardContentPage> wit
   }
 
   Widget _buildTaskCard(BuildContext context) {
+    // 1. Fetch Shared Task State
+    final task = DummyCourseData.tasks.firstWhere((t) => t.id == 't1', orElse: () => DummyCourseData.tasks.first);
+    final isCompleted = task.isCompleted;
+
     return Container(
        width: double.infinity,
        padding: const EdgeInsets.all(20),
@@ -239,15 +244,21 @@ class _DashboardContentPageState extends ConsumerState<DashboardContentPage> wit
              SizedBox( // Ensure button stretches but has constraint
                 width: double.infinity,
                 child: ElevatedButton(
-                   onPressed: () {}, 
+                   onPressed: () async {
+                      // Navigate to Shared Assignment Page
+                      DummyCourseData.tasks;
+                      await Navigator.pushNamed(context, '/assignment-detail');
+                      // Refresh State when returning from Detail Page (in case status changed)
+                      setState(() {});
+                   }, 
                    style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFFA82E2E),
+                      foregroundColor: isCompleted ? Colors.green : const Color(0xFFA82E2E),
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                    ),
-                   child: const Text('Kumpulkan Tugas'),
+                   child: Text(isCompleted ? 'Sudah Dikumpulkan' : 'Kumpulkan Tugas'),
                 ),
              ),
           ],

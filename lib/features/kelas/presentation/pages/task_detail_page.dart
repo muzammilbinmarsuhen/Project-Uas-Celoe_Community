@@ -146,6 +146,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                                   Navigator.pushNamed(context, '/quiz-overview');
                                } else {
                                   // For assignments, standard logic or nothing for now
+                                  Navigator.pushNamed(context, '/assignment-detail');
                                }
                             }, 
                             style: ElevatedButton.styleFrom(
