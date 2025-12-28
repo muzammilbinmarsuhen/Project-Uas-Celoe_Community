@@ -19,20 +19,23 @@ class _AnnouncementCarouselWidgetState extends State<AnnouncementCarouselWidget>
     {
       'title': 'Maintenance Pra UAS Semester Genap',
       'image': 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=800&q=80',
-      'date': '10 Jan 2024',
+      'date': '10 Jan 2025',
+      'url': 'https://celoe.telkomuniversity.ac.id/maintenance',
       'description': 'Diberitahukan kepada seluruh mahasiswa bahwa akan dilakukan pemeliharaan sistem (maintenance) untuk persiapan Ujian Akhir Semester (UAS) Genap. Selama periode ini, layanan LMS mungkin akan mengalami gangguan sementara. \n\nMohon untuk menyelesaikan pengumpulan tugas sebelum jadwal maintenance dimulai. Terima kasih atas pengertiannya.'
     },
     {
        'title': 'Webinar: UI/UX Trends 2025',
        'image': 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80',
-       'date': '15 Jan 2024',
+       'date': '15 Jan 2025',
+       'url': 'https://celoe.telkomuniversity.ac.id/webinar-uiux',
        'description': 'Bergabunglah dalam sesi webinar eksklusif bersama para ahli industri yang akan membahas tren desain antarmuka dan pengalaman pengguna yang diprediksi akan mendominasi di tahun 2025. \n\nTopik meliputi: AI dalam desain, Neumorphism v2, dan aksesibilitas tingkat lanjut.'
     },
     {
        'title': 'Libur Semester Ganjil Dimulai',
        'image': 'https://images.unsplash.com/photo-1455849318743-b2233052fcff?auto=format&fit=crop&w=800&q=80',
-       'date': '20 Jan 2024',
-       'description': 'Selamat menikmati libur semester! Perkuliahan semester genap akan dimulai kembali pada tanggal 10 Februari 2024. Gunakan waktu ini untuk beristirahat dan mengembangkan soft skill Anda.'
+       'date': '20 Jan 2025',
+       'url': 'https://celoe.telkomuniversity.ac.id/kalender-akademik',
+       'description': 'Selamat menikmati libur semester! Perkuliahan semester genap akan dimulai kembali pada tanggal 10 Februari 2025. Gunakan waktu ini untuk beristirahat dan mengembangkan soft skill Anda.'
     }
   ];
 

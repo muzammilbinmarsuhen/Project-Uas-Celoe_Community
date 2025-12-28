@@ -80,6 +80,35 @@ class AnnouncementDetailPage extends StatelessWidget {
                            textAlign: TextAlign.justify,
                         ),
                         
+                        const SizedBox(height: 24),
+
+                        if (announcement['url'] != null)
+                           SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                 onPressed: () {
+                                     // Open Link
+                                     Navigator.pushNamed(
+                                         context, 
+                                         '/document-viewer',
+                                         arguments: {
+                                             'title': announcement['title'],
+                                             'type': 'link',
+                                             'url': announcement['url']
+                                         }
+                                     );
+                                 },
+                                 icon: const Icon(Icons.link, size: 18),
+                                 label: Text('Baca Selengkapnya', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                                 style: OutlinedButton.styleFrom(
+                                     foregroundColor: const Color(0xFFA82E2E),
+                                     side: const BorderSide(color: Color(0xFFA82E2E)),
+                                     padding: const EdgeInsets.symmetric(vertical: 14),
+                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
+                                 ),
+                              ),
+                           ),
+                        
                         const SizedBox(height: 40),
                      ],
                   ),

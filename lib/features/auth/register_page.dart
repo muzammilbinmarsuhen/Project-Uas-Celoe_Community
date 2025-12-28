@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../routes/app_routes.dart';
 import '../../core/widgets/custom_text_field.dart';
@@ -37,15 +37,19 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       
-      // Split username (or in future add dedicated fields) for first/last name
-      // Logic: First word is First Name, rest is Last Name
       final fullName = _usernameController.text.trim();
       final parts = fullName.split(' ');
       final firstName = parts.first;
       final lastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+
+      // Save credentials for local validation
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('registered_email', _emailController.text.trim());
+      await prefs.setString('registered_password', _passwordController.text);
+      await prefs.setString('registered_username', fullName);
       
       final success = await ref.read(authRepositoryProvider).register(
-          _usernameController.text, // Use full name as username also for now
+          _usernameController.text, 
           _emailController.text, 
           _passwordController.text,
           firstName,
@@ -55,7 +59,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       if (mounted) {
          setState(() => _isLoading = false);
          if (success) {
-            // Navigate to login or home? Let's go to Login to force re-auth or auto-login
             Navigator.pushReplacementNamed(context, AppRoutes.login);
             ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Registrasi berhasil! Silakan login.')),

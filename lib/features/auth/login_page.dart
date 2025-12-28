@@ -57,7 +57,33 @@ class _LoginPageState extends ConsumerState<LoginPage> with SingleTickerProvider
       return;
     }
 
+    if (!email.endsWith('@gmail.com')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Email harus menggunakan domain @gmail.com'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
     final prefs = await SharedPreferences.getInstance();
+    
+    if (!mounted) return;
+
+    final registeredEmail = prefs.getString('registered_email');
+    final registeredPassword = prefs.getString('registered_password');
+
+    if (registeredEmail == null || registeredEmail != email) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Akun belum terdaftar. Silakan daftar terlebih dahulu.'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    if (registeredPassword != password) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password salah.'), backgroundColor: Colors.red),
+      );
+      return;
+    }
     
     // 1. Check if First Access exists
     if (!prefs.containsKey('first_access')) {

@@ -19,14 +19,19 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
 
   bool _hasError = false;
 
+  bool _isInit = false;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-    if (args != null) {
-       _title = args['title'] ?? 'Article Detail';
-       _url = args['url'] ?? 'https://scholar.google.com';
-       _initWebView(_url);
+    if (!_isInit) {
+       final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+       if (args != null) {
+          _title = args['title'] ?? 'Article Detail';
+          _url = args['url'] ?? 'https://scholar.google.com';
+          _initWebView(_url);
+       }
+       _isInit = true;
     }
   }
 

@@ -12,7 +12,7 @@ class DummyData {
     description: 'Mahasiswa aktif Telkom University yang semangat belajar.',
     faculty: 'Fakultas Ilmu Terapan',
     studyProgram: 'D3 Sistem Informasi',
-    firstAccess: DateTime(2023, 9, 1, 8, 0),
+    firstAccess: DateTime(2025, 1, 1, 8, 0),
     lastAccess: DateTime.now(),
   );
 
@@ -176,21 +176,21 @@ class DummyData {
       namaKelas: 'Desain Antarmuka & Pengalaman Pengguna',
       kodeKelas: 'UIUX-101',
       dosen: 'Ady Purnomo',
-      tanggalMulai: DateTime(2023, 9, 1),
+      tanggalMulai: DateTime(2025, 1, 15),
     ),
     ClassModel(
       id: '2',
       namaKelas: 'Pemrograman Perangkat Bergerak',
       kodeKelas: 'MOBILE-201',
       dosen: 'Budi Santoso',
-      tanggalMulai: DateTime(2023, 9, 1),
+      tanggalMulai: DateTime(2025, 1, 15),
     ),
     ClassModel(
       id: '3',
       namaKelas: 'Sistem Operasi',
       kodeKelas: 'SO-301',
       dosen: 'Cici Lestari',
-      tanggalMulai: DateTime(2023, 9, 1),
+      tanggalMulai: DateTime(2025, 1, 15),
     ),
   ];
 }

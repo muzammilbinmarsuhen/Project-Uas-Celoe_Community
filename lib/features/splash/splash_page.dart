@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../routes/app_routes.dart';
-import '../auth/widgets/auth_background_widgets.dart'; // Import Shared Widgets
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -14,50 +12,43 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _fadeAnimation;
+  late AnimationController _mainController;
   late Animation<double> _scaleAnimation;
-  late Animation<double> _particleAnimation;
+  late Animation<double> _logoFadeAnimation;
+  late Animation<double> _textFadeAnimation;
+  late Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(seconds: 3),
-      vsync: this,
+    _mainController = AnimationController(
+       duration: const Duration(milliseconds: 2500), vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeIn),
-      ),
+    // 1. Logo Entrance: Smooth Pop with Fade
+    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _mainController, curve: const Interval(0.0, 0.6, curve: Curves.easeOutBack))
+    );
+    
+    _logoFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _mainController, curve: const Interval(0.0, 0.4, curve: Curves.easeIn))
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeOutBack),
-      ),
+    // 2. Text Content: Delays + Slide Up
+    _textFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _mainController, curve: const Interval(0.5, 1.0, curve: Curves.easeIn))
+    );
+    
+    _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+       CurvedAnimation(parent: _mainController, curve: const Interval(0.5, 1.0, curve: Curves.easeOutCubic))
     );
 
-    _particleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.linear,
-      ),
-    );
-
-    _controller.forward(); 
-    // We don't repeat here to keep transition simple.
-
+    _mainController.forward();
     _checkLoginAndNavigate();
   }
 
   Future<void> _checkLoginAndNavigate() async {
-    // Artificial Delay for Splash Effect
-    await Future.delayed(const Duration(seconds: 3));
-
+    await Future.delayed(const Duration(seconds: 4)); 
     if (!mounted) return;
 
     final prefs = await SharedPreferences.getInstance();
@@ -79,163 +70,133 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    _controller.dispose();
+    _mainController.dispose();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          // Gradient Background
-          Container(
-            width: double.infinity,
-            height: double.infinity,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFFB74A4A),
-                  Color(0xFFA82E2E), 
-                  Color(0xFF7F1D1D), 
-                ],
-              ),
-            ),
-          ),
-          
-          // Animated Particles
-          AnimatedBuilder(
-            animation: _particleAnimation,
-            builder: (context, child) {
-              return CustomPaint(
-                painter: FloatingParticlesPainter(_particleAnimation.value),
-                size: Size.infinite,
-              );
-            },
-          ),
-
-          // Glassmorphism Overlay
-          BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-            child: Container(
-              color: Colors.white.withValues(alpha: 0.02),
-            ),
-          ),
-
-          // Main Content with LayoutBuilder
-          LayoutBuilder(
-            builder: (context, constraints) {
-              // Calculate responsive sizes based on constraints
-              final width = constraints.maxWidth;
-              final height = constraints.maxHeight;
-              final logoSize = width * 0.4;
-              final textSize = width * 0.06;
-              final isSmallScreen = height < 600;
-
-              return SafeArea(
-                child: Center(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        AnimatedBuilder(
-                          animation: _controller,
-                          builder: (context, child) {
-                            return Opacity(
-                              opacity: _fadeAnimation.value.clamp(0.0, 1.0),
-                              child: Transform.scale(
-                                scale: _scaleAnimation.value,
-                                child: Container(
-                                  width: logoSize,
-                                  height: logoSize,
-                                  constraints: const BoxConstraints(
-                                    minWidth: 100,
-                                    maxWidth: 200,
-                                    minHeight: 100, 
-                                    maxHeight: 200
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.2),
-                                        blurRadius: 20,
-                                        offset: const Offset(0, 10),
-                                      )
-                                    ],
-                                  ),
-                                  padding: const EdgeInsets.all(20),
-                                  child: Image.asset(
-                                    'assets/images/Logo Celoe.png',
-                                    errorBuilder: (ctx, _, __) => const Icon(Icons.school, size: 50, color: Color(0xFFA82E2E)),
-                                  ),
-                                ),
+       body: Stack(
+          children: [
+             // Gradient Background
+             Container(
+                decoration: const BoxDecoration(
+                   gradient: LinearGradient(
+                      colors: [Color(0xFFB74B4B), Color(0xFF6A1B1B)], 
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight
+                   )
+                ),
+             ),
+             
+             // Main Content
+             Center(
+                child: Column(
+                   mainAxisAlignment: MainAxisAlignment.center,
+                   children: [
+                      // Logo Box with Glow and Animation
+                      FadeTransition(
+                        opacity: _logoFadeAnimation,
+                        child: ScaleTransition(
+                           scale: _scaleAnimation,
+                           child: Container(
+                              height: 180, width: 180,
+                              padding: const EdgeInsets.all(35), // Increased padding for better proportion
+                              decoration: BoxDecoration(
+                                 shape: BoxShape.circle,
+                                 color: Colors.white,
+                                 boxShadow: [
+                                    BoxShadow(
+                                       color: Colors.black.withValues(alpha: 0.1), // Softer shadow
+                                       blurRadius: 30,
+                                       spreadRadius: 2,
+                                       offset: const Offset(0, 8)
+                                    ),
+                                    BoxShadow(
+                                       color: Colors.white.withValues(alpha: 0.2), // Outer glow
+                                       blurRadius: 20,
+                                       spreadRadius: 5
+                                    )
+                                 ]
                               ),
-                            );
-                          },
+                              child: Image.asset(
+                                 'assets/images/Logo Celoe.png',
+                                 fit: BoxFit.contain,
+                                 errorBuilder: (ctx, _, __) => const Icon(Icons.school, size: 80, color: Color(0xFFA82E2E)),
+                              ),
+                           ),
                         ),
-                        SizedBox(height: isSmallScreen ? 16 : 32),
-                        AnimatedBuilder(
-                          animation: _controller,
-                          builder: (context, child) {
-                            return Opacity(
-                              opacity: _fadeAnimation.value.clamp(0.0, 1.0),
-                              child: Column(
-                                 children: [
-                                    Text(
-                                      'CeLOE Community',
-                                      style: GoogleFonts.poppins(
+                      ),
+                      const SizedBox(height: 50),
+                      
+                      // Text Content
+                      FadeTransition(
+                         opacity: _textFadeAnimation,
+                         child: SlideTransition(
+                            position: _slideAnimation,
+                            child: Column(
+                               children: [
+                                  Text(
+                                     'CeLOE Community',
+                                     style: GoogleFonts.poppins(
+                                        fontSize: 28, 
+                                        fontWeight: FontWeight.bold, 
                                         color: Colors.white,
-                                        fontSize: textSize.clamp(18, 32), // Adaptive with limits
-                                        fontWeight: FontWeight.bold,
                                         letterSpacing: 1.2,
                                         shadows: [
-                                          Shadow(
-                                            color: Colors.black.withValues(alpha: 0.3),
-                                            offset: const Offset(0, 2),
-                                            blurRadius: 4,
-                                          ),
-                                        ],
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'Learning Management System',
-                                      style: GoogleFonts.poppins(
-                                        color: Colors.white70,
-                                        fontSize: (textSize * 0.5).clamp(12, 16),
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                    ),
-                                    SizedBox(height: isSmallScreen ? 16 : 40),
-                                    // Simple Loading Indicator
-                                    const SizedBox(
-                                      width: 20, 
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white54, 
-                                        strokeWidth: 2,
-                                      ),
-                                    ),
-                                 ],
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
+                                           Shadow(
+                                              color: Colors.black.withValues(alpha: 0.2),
+                                              blurRadius: 6,
+                                              offset: const Offset(0, 3)
+                                           )
+                                        ]
+                                     ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Container(
+                                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                                     decoration: BoxDecoration(
+                                        color: Colors.white.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(30),
+                                        border: Border.all(color: Colors.white.withValues(alpha: 0.15))
+                                     ),
+                                     child: Text(
+                                        'Learning Management System',
+                                        style: GoogleFonts.poppins(
+                                           fontSize: 12, 
+                                           color: Colors.white.withValues(alpha: 0.9),
+                                           letterSpacing: 0.5,
+                                           fontWeight: FontWeight.w500
+                                        ),
+                                     ),
+                                  ),
+                               ],
+                            ),
+                         ),
+                      )
+                   ],
                 ),
-              );
-            },
-          ),
-        ],
-      ),
+             ),
+             
+             // Bottom Loading Indicator
+             Positioned(
+                bottom: 60, left: 0, right: 0,
+                child: Center(
+                   child: FadeTransition(
+                      opacity: _textFadeAnimation,
+                      child: const SizedBox(
+                         width: 24, height: 24,
+                         child: CircularProgressIndicator(
+                           valueColor: AlwaysStoppedAnimation<Color>(Colors.white70), 
+                           strokeWidth: 2.5
+                         ),
+                      ),
+                   ),
+                ),
+             )
+          ],
+       ),
     );
   }
 }

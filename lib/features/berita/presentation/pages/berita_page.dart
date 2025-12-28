@@ -31,7 +31,7 @@ class BeritaPage extends StatelessWidget {
                  '/article-detail',
                  arguments: {
                    'title': item.title,
-                   'url': 'https://www.google.com/search?q=${Uri.encodeComponent(item.title)}', // Demo URL
+                   'url': item.url,
                  }
                );
             },
