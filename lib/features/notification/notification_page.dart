@@ -17,26 +17,31 @@ class _NotifikasiPageState extends State<NotifikasiPage> with SingleTickerProvid
       'type': 'tugas', // 'tugas' or 'kuis'
       'title': 'Anda telah mengirimkan pengajuan tugas untuk Pengumpulan Laporan Akhir Assessment 3 (Tugas Besar)',
       'time': '3 Hari 9 Jam Yang Lalu',
+      'message': 'Laporan Akhir Assessment 3 (Tugas Besar) Anda telah berhasil dikirim. Silakan cek kembali status pengumpulan secara berkala untuk memastikan tidak ada revisi yang diminta oleh dosen pengampu. Batas akhir revisi adalah 2 minggu dari sekarang.',
     },
     {
       'type': 'kuis',
       'title': 'Anda telah menyelesaikan Quiz Review 01 dengan nilai 85',
       'time': '5 Hari 2 Jam Yang Lalu',
+      'message': 'Selamat! Anda telah menyelesaikan Quiz Review 01. Nilai akhir Anda adalah 85/100. Anda dapat melihat detail jawaban dan pembahasan pada menu Kuis di halaman kelas.',
     },
     {
       'type': 'tugas',
       'title': 'Tugas Baru: Implementasi User Interface dengan Flutter telah dirilis',
       'time': '1 Minggu Yang Lalu',
+      'message': 'Dosen Pengampu telah menambahkan tugas baru: "Implementasi User Interface dengan Flutter". Tugas ini mencakup pembuatan layout responsif dan penggunaan widget dasar. Tenggat waktu pengumpulan adalah 10 Januari 2026.',
     },
     {
       'type': 'kuis',
       'title': 'Pengingat: Kuis Logika Algoritma akan dimulai dalam 2 jam',
       'time': '1 Minggu Yang Lalu',
+      'message': 'Kuis Logika Algoritma akan segera dimulai dalam 2 jam. Pastikan koneksi internet Anda stabil dan siapkan perangkat Anda. Durasi kuis adalah 60 menit.',
     },
      {
       'type': 'tugas',
       'title': 'Anda telah mengirimkan pengajuan tugas untuk Perancangan Database NGO',
       'time': '2 Minggu Yang Lalu',
+      'message': 'Tugas "Perancangan Database NGO" telah diterima sistem. Terima kasih telah mengumpulkan tepat waktu.',
     },
   ];
 
@@ -54,6 +59,51 @@ class _NotifikasiPageState extends State<NotifikasiPage> with SingleTickerProvid
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+  
+  void _showDetailDialog(BuildContext context, Map<String, dynamic> item) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(
+            item['type'] == 'tugas' ? 'Detail Tugas' : 'Detail Kuis',
+            style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+               Text(
+                 item['title'],
+                 style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 14),
+               ),
+               const SizedBox(height: 8),
+               Text(
+                 item['time'],
+                 style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
+               ),
+               const SizedBox(height: 16),
+               Text(
+                 item['message'] ?? 'Tidak ada deskripsi detail.',
+                 style: GoogleFonts.poppins(fontSize: 13, height: 1.5),
+                 textAlign: TextAlign.justify,
+               ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Tutup', 
+                style: GoogleFonts.poppins(color: const Color(0xFFA82E2E), fontWeight: FontWeight.bold)
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -123,10 +173,7 @@ class _NotifikasiPageState extends State<NotifikasiPage> with SingleTickerProvid
 
     return InkWell(
       onTap: () {
-        // Placeholder navigation
-        ScaffoldMessenger.of(context).showSnackBar(
-           const SnackBar(content: Text('Navigate to Detail...')),
-        );
+        _showDetailDialog(context, item);
       },
       borderRadius: BorderRadius.circular(8),
       child: Row(
