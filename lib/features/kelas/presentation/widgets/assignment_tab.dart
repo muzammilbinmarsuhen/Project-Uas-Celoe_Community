@@ -3,19 +3,71 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../data/dummy_course_data.dart';
 
-class AssignmentTab extends StatelessWidget {
+class AssignmentTab extends StatefulWidget {
   const AssignmentTab({super.key});
+
+  @override
+  State<AssignmentTab> createState() => _AssignmentTabState();
+}
+
+class _AssignmentTabState extends State<AssignmentTab> {
+  bool _isSelectionMode = false;
+  final Set<String> _selectedIds = {};
+
+  void _toggleSelection(String id) {
+    setState(() {
+      if (_selectedIds.contains(id)) {
+        _selectedIds.remove(id);
+      } else {
+        _selectedIds.add(id);
+      }
+      if (_selectedIds.isEmpty) {
+        _isSelectionMode = false;
+      }
+    });
+  }
+
+  void _enterSelectionMode(String id) {
+    setState(() {
+      _isSelectionMode = true;
+      _selectedIds.add(id);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final tasks = DummyCourseData.tasks;
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(20),
-      itemCount: tasks.length,
-      itemBuilder: (context, index) {
-        return _buildTaskCard(context, tasks[index]);
-      },
+    return Column(
+      children: [
+        if (_isSelectionMode)
+           Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            color: Colors.white,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('${_selectedIds.length} Dipilih', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+                TextButton(
+                  onPressed: () => setState(() {
+                    _isSelectionMode = false;
+                    _selectedIds.clear();
+                  }),
+                  child: Text('Batal', style: GoogleFonts.poppins(color: Colors.red)),
+                )
+              ],
+            ),
+          ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.all(20),
+            itemCount: tasks.length,
+            itemBuilder: (context, index) {
+              return _buildTaskCard(context, tasks[index]);
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -24,20 +76,27 @@ class AssignmentTab extends StatelessWidget {
     final color = isQuiz ? Colors.purple : Colors.orange;
     final icon = isQuiz ? Icons.quiz : Icons.article;
     final label = isQuiz ? 'Quiz' : 'Tugas';
+    final isSelected = _selectedIds.contains(item.id);
 
     return GestureDetector(
       onTap: () {
-         if (isQuiz) {
-            Navigator.pushNamed(context, '/task-detail', arguments: item); // Assuming AppRoutes.taskDetail is '/task-detail'
+         if (_isSelectionMode) {
+           _toggleSelection(item.id);
          } else {
-            Navigator.pushNamed(context, '/assignment-detail');
+            if (isQuiz) {
+               Navigator.pushNamed(context, '/task-detail', arguments: item);
+            } else {
+               Navigator.pushNamed(context, '/assignment-detail');
+            }
          }
       },
+      onLongPress: () => _enterSelectionMode(item.id),
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isSelected ? color.withValues(alpha: 0.05) : Colors.white,
           borderRadius: BorderRadius.circular(16),
+          border: isSelected ? Border.all(color: color, width: 1.5) : null,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
@@ -97,10 +156,11 @@ class AssignmentTab extends StatelessWidget {
                 ),
               ),
               
-              if (item.isCompleted)
-                const Icon(Icons.check_circle, color: Colors.green)
-              else
-                const Icon(Icons.circle_outlined, color: Colors.grey),
+              if (_isSelectionMode)
+                Icon(
+                  isSelected ? Icons.check_box : Icons.check_box_outline_blank, 
+                  color: isSelected ? color : Colors.grey
+                )
             ],
           ),
         ),

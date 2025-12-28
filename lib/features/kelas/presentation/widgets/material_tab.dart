@@ -3,46 +3,104 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../data/dummy_course_data.dart';
 import '../../../../routes/app_routes.dart';
 
-class MaterialTab extends StatelessWidget {
+class MaterialTab extends StatefulWidget {
   const MaterialTab({super.key});
+
+  @override
+  State<MaterialTab> createState() => _MaterialTabState();
+}
+
+class _MaterialTabState extends State<MaterialTab> {
+  bool _isSelectionMode = false;
+  final Set<String> _selectedIds = {};
+
+  void _toggleSelection(String id) {
+    setState(() {
+      if (_selectedIds.contains(id)) {
+        _selectedIds.remove(id);
+      } else {
+        _selectedIds.add(id);
+      }
+      
+      // Auto-exit if empty? Optional. Let's keep it manual or empty-exit.
+      if (_selectedIds.isEmpty) {
+        _isSelectionMode = false;
+      }
+    });
+  }
+
+  void _enterSelectionMode(String id) {
+    setState(() {
+      _isSelectionMode = true;
+      _selectedIds.add(id);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final materials = DummyCourseData.materials;
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(20),
-      itemCount: materials.length,
-      itemBuilder: (context, index) {
-        return _buildMaterialCard(context, materials[index], index);
-      },
+    return Column(
+      children: [
+        if (_isSelectionMode)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            color: Colors.white,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('${_selectedIds.length} Dipilih', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+                TextButton(
+                  onPressed: () => setState(() {
+                    _isSelectionMode = false;
+                    _selectedIds.clear();
+                  }),
+                  child: Text('Batal', style: GoogleFonts.poppins(color: Colors.red)),
+                )
+              ],
+            ),
+          ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.all(20),
+            itemCount: materials.length,
+            itemBuilder: (context, index) {
+              return _buildMaterialCard(context, materials[index], index);
+            },
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildMaterialCard(BuildContext context, MaterialItem item, int index) {
-    // Staggered Animation
+    final isSelected = _selectedIds.contains(item.id);
+
     return TweenAnimationBuilder<double>(
        tween: Tween(begin: 0.0, end: 1.0),
-       duration: Duration(milliseconds: 400 + (index * 100)), // Staggered delay logic
+       duration: Duration(milliseconds: 400 + (index * 100)),
        curve: Curves.easeOutQuad,
        builder: (context, value, child) {
           return Transform.translate(
-             offset: Offset(0, 50 * (1 - value)), // Slide Up
-             child: Opacity(
-                opacity: value,
-                child: child,
-             ),
+             offset: Offset(0, 50 * (1 - value)),
+             child: Opacity(opacity: value, child: child),
           );
        },
        child: _ScaleableCard(
           onTap: () {
-            Navigator.pushNamed(context, AppRoutes.materialDetail, arguments: item);
+            if (_isSelectionMode) {
+              _toggleSelection(item.id);
+            } else {
+              Navigator.pushNamed(context, AppRoutes.materialDetail, arguments: item);
+            }
           },
+          onLongPress: () => _enterSelectionMode(item.id),
           child: Container(
             margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isSelected ? Colors.red.withValues(alpha: 0.05) : Colors.white,
               borderRadius: BorderRadius.circular(16),
+              border: isSelected ? Border.all(color: const Color(0xFFA82E2E), width: 1.5) : null,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.05),
@@ -66,7 +124,6 @@ class MaterialTab extends StatelessWidget {
                           color: Colors.blue.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        // Using a visual placeholder instead of asset for dummy
                         child: Center(
                            child: Icon(Icons.menu_book, color: Colors.blue, size: 30),
                         ),
@@ -117,15 +174,16 @@ class MaterialTab extends StatelessWidget {
                         ),
                       ),
 
-                      // Status Icon
-                      Container(
-                         margin: const EdgeInsets.only(left: 8),
-                         child: Icon(
-                           item.isCompleted ? Icons.check_circle : Icons.circle_outlined,
-                           color: item.isCompleted ? Colors.green : Colors.grey[300],
-                           size: 24,
-                         ),
-                      ),
+                      // Status/Selection Icon
+                      if (_isSelectionMode)
+                        Container(
+                           margin: const EdgeInsets.only(left: 8),
+                           child: Icon(
+                             isSelected ? Icons.check_box : Icons.check_box_outline_blank,
+                             color: isSelected ? const Color(0xFFA82E2E) : Colors.grey,
+                             size: 24,
+                           ),
+                        ),
                     ],
                   ),
                 ),
@@ -140,7 +198,9 @@ class MaterialTab extends StatelessWidget {
 class _ScaleableCard extends StatefulWidget {
   final Widget child;
   final VoidCallback onTap;
-  const _ScaleableCard({required this.child, required this.onTap});
+  final VoidCallback? onLongPress;
+  
+  const _ScaleableCard({required this.child, required this.onTap, this.onLongPress});
   @override
   State<_ScaleableCard> createState() => _ScaleableCardState();
 }
@@ -171,6 +231,7 @@ class _ScaleableCardState extends State<_ScaleableCard> with SingleTickerProvide
           widget.onTap();
        },
        onTapCancel: () => _controller.reverse(),
+       onLongPress: widget.onLongPress,
        child: AnimatedBuilder(
           animation: _controller,
           builder: (context, child) => Transform.scale(scale: _scaleAnimation.value, child: widget.child),
