@@ -21,6 +21,8 @@ import '../features/kelas/presentation/pages/assignment/assignment_detail_page.d
 import '../features/kelas/presentation/pages/assignment/upload_file_page.dart';
 import '../features/kelas/presentation/pages/material/article_list_page.dart';
 import '../features/kelas/presentation/pages/material/article_detail_page.dart';
+import '../features/kelas/data/dummy_course_data.dart'; // Import for fallback data
+
 
 class AppRoutes {
   static const String splash = '/';
@@ -53,12 +55,15 @@ class AppRoutes {
       pengumuman: (context) => const PengumumanPage(),
       courseMenu: (context) => const CourseMenuPage(),
       materialDetail: (context) {
-        final args = ModalRoute.of(context)!.settings.arguments as dynamic;
-        return MaterialDetailPage(material: args);
+        final args = ModalRoute.of(context)!.settings.arguments;
+        // Fallback for development/hot-restart if args are missing
+        final material = args is MaterialItem ? args : DummyCourseData.materials.first;
+        return MaterialDetailPage(material: material);
       },
       taskDetail: (context) {
-         final args = ModalRoute.of(context)!.settings.arguments as dynamic;
-         return TaskDetailPage(task: args);
+         final args = ModalRoute.of(context)!.settings.arguments;
+         final task = args is TaskItem ? args : DummyCourseData.tasks.first;
+         return TaskDetailPage(task: task);
       },
       '/quiz-overview': (context) => const QuizOverviewPage(),
       '/quiz-start': (context) => const QuizQuestionPage(),
